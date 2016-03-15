@@ -22,14 +22,12 @@ package ipnat.skel;
  * PARTICULAR PURPOSE. See the GNU General Public License for more details.
  */
 
-
 import java.awt.Checkbox;
 import java.awt.Choice;
 import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.Window;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.ListIterator;
 import java.util.Vector;
 
@@ -94,9 +92,9 @@ public class Strahler implements PlugIn, DialogListener {
 	boolean protecRoot;
 
 	@Override
-	public void run(String arg) {
+	public void run(final String arg) {
 
-		Utils utils = new ipnat.Utils();
+		final Utils utils = new ipnat.Utils();
 		if (!utils.validSkelDependencies())
 			return;
 
@@ -104,13 +102,13 @@ public class Strahler implements PlugIn, DialogListener {
 		try {
 			Class.forName("sc.fiji.analyzeSkeleton.AnalyzeSkeleton_");
 			Class.forName("sc.fiji.skeletonize3D.Skeletonize3D_");
-		} catch (ClassNotFoundException e) {
+		} catch (final ClassNotFoundException e) {
 			String msg = "\n**** Strahler Analysis Error: Required file(s) not found:\n" + e + "\n \n"
 					+ "Strahler Analysis requires a recent version of AnalyzeSkeleton_.jar and Skeletonize3D_.jar.\n"
 					+ "The easiest way to install these files is to use Fiji:\n";
 			try {
 				Class.forName("net.imagej.ui.swing.updater.ImageJUpdater");
-			} catch (ClassNotFoundException ignored) {
+			} catch (final ClassNotFoundException ignored) {
 				msg += "Please download a modern version of ImageJ from http://imagej.net/Downloads, then\n";
 			}
 			msg += "Run Help>Update and ensure you are subscribed to the Fiji update site.\n \n"
@@ -123,11 +121,11 @@ public class Strahler implements PlugIn, DialogListener {
 		}
 
 		// Retrieve analysis image and its ROI
-		ImagePlus srcImp = WindowManager.getCurrentImage();
+		final ImagePlus srcImp = WindowManager.getCurrentImage();
 		if (!validImage(srcImp))
 			return;
-		String title = srcImp.getTitle();
-		Roi roi = srcImp.getRoi();
+		final String title = srcImp.getTitle();
+		final Roi roi = srcImp.getRoi();
 		validRootRoi = (roi != null && roi.getType() == Roi.RECTANGLE);
 
 		// TODO: 3D Roots are special. We need to:
@@ -140,22 +138,22 @@ public class Strahler implements PlugIn, DialogListener {
 		}
 
 		// Retrieve grayscale image for intensity-based pruning of skel. loops
-		ImagePlus origImp = getOriginalImp(title);
+		final ImagePlus origImp = getOriginalImp(title);
 		if (origImp == null)
 			return;
 
 		// Work on a skeletonized copy since we'll be modifing the image
 		if (roi != null)
 			srcImp.killRoi();
-		ImagePlus imp = srcImp.duplicate();
+		final ImagePlus imp = srcImp.duplicate();
 		if (roi != null)
 			srcImp.setRoi(roi);
 		ip = imp.getProcessor();
 		skeletonizeWithoutHermits(imp);
 
 		// Initialize ResultsTable: main and detailed info
-		ResultsTable rt = getTable(STRAHLER_TABLE);
-		ResultsTable logrt = getTable(VERBOSE_TABLE);
+		final ResultsTable rt = getTable(STRAHLER_TABLE);
+		final ResultsTable logrt = getTable(VERBOSE_TABLE);
 
 		// Analyze root
 		ImagePlus rootImp;
@@ -173,7 +171,7 @@ public class Strahler implements PlugIn, DialogListener {
 			rootIp.fillOutside(roi);
 
 			// Get root properties
-			AnalyzeSkeleton_ root = new AnalyzeSkeleton_();
+			final AnalyzeSkeleton_ root = new AnalyzeSkeleton_();
 			root.setup("", rootImp);
 			rootResult = root.run(pruneChoice, false, false, origImp, true, false);
 			rootImp.flush();
@@ -183,10 +181,10 @@ public class Strahler implements PlugIn, DialogListener {
 			// boundaries
 			nRootJunctions = sum(rootResult.getJunctions());
 			rootEndpointsList = rootResult.getListOfEndPoints();
-			ListIterator<Point> it = rootEndpointsList.listIterator();
-			Rectangle r = roi.getBounds();
+			final ListIterator<Point> it = rootEndpointsList.listIterator();
+			final Rectangle r = roi.getBounds();
 			while (it.hasNext()) {
-				Point p = (Point) it.next();
+				final Point p = it.next();
 				if (p.x == r.x || p.y == r.y || p.x == r.x + r.getWidth() - 1 || p.y == r.y + r.getHeight() - 1)
 					it.remove();
 			}
@@ -197,10 +195,10 @@ public class Strahler implements PlugIn, DialogListener {
 
 		// Initialize display images. Use Z-projections to populate
 		// iteration stack when dealing with 3D skeletons
-		int nSlices = imp.getNSlices();
+		final int nSlices = imp.getNSlices();
 		ZProjector zp = null;
 
-		ImageStack iterationStack = new ImageStack(imp.getWidth(), imp.getHeight());
+		final ImageStack iterationStack = new ImageStack(imp.getWidth(), imp.getHeight());
 		if (nSlices > 1) {
 			zp = new ZProjector(imp);
 			zp.setMethod(ZProjector.MAX_METHOD);
@@ -209,7 +207,7 @@ public class Strahler implements PlugIn, DialogListener {
 		}
 
 		// Initialize AnalyzeSkeleton_
-		AnalyzeSkeleton_ as = new AnalyzeSkeleton_();
+		final AnalyzeSkeleton_ as = new AnalyzeSkeleton_();
 		as.setup("", imp);
 
 		// Perform the iterative pruning
@@ -227,7 +225,7 @@ public class Strahler implements PlugIn, DialogListener {
 				skeletonizeWithoutHermits(imp);
 
 			// Get properties of loop-resolved tree(s)
-			SkeletonResult sr = as.run(pruneChoice, false, false, origImp, true, false);
+			final SkeletonResult sr = as.run(pruneChoice, false, false, origImp, true, false);
 			nEndpoints = sum(sr.getEndPoints());
 			nJunctions = sum(sr.getJunctions());
 
@@ -288,7 +286,7 @@ public class Strahler implements PlugIn, DialogListener {
 		if (validRootRoi && verbose) {
 
 			// Check if ROI contains unexpected structures
-			String msg = (nRootJunctions > 0) ? "Warning: ROI contains ramified root(s)"
+			final String msg = (nRootJunctions > 0) ? "Warning: ROI contains ramified root(s)"
 					: "Root-branches inferred from ROI";
 			logrt.incrementCounter();
 			logrt.addLabel("Image", title);
@@ -316,8 +314,8 @@ public class Strahler implements PlugIn, DialogListener {
 		}
 
 		// Create iteration stack
-		Calibration cal = srcImp.getCalibration();
-		ImagePlus imp2 = new ImagePlus("StrahlerIteration_" + title, iterationStack);
+		final Calibration cal = srcImp.getCalibration();
+		final ImagePlus imp2 = new ImagePlus("StrahlerIteration_" + title, iterationStack);
 		imp2.setCalibration(cal);
 		if (outIS) {
 			if (validRootRoi) {
@@ -335,10 +333,10 @@ public class Strahler implements PlugIn, DialogListener {
 		zp.setStartSlice(1);
 		zp.setStopSlice(order);
 		zp.doProjection();
-		ImageProcessor ip3 = zp.getProjection().getProcessor().convertToShortProcessor(false);
+		final ImageProcessor ip3 = zp.getProjection().getProcessor().convertToShortProcessor(false);
 		clearPoints(ip3, junctionsList); // disconnect branches
 		ip3.multiply(1 / 255.0); // map intensities to Strahler orders
-		ImagePlus imp3 = new ImagePlus("StrahlerMask_" + title, ip3);
+		final ImagePlus imp3 = new ImagePlus("StrahlerMask_" + title, ip3);
 		imp3.setCalibration(cal);
 
 		// Measure segmented orders
@@ -346,16 +344,16 @@ public class Strahler implements PlugIn, DialogListener {
 		for (int i = 1; i <= order; i++) {
 
 			// Segment branches by order
-			ImagePlus maskImp = imp3.duplicate(); // Calibration will be
-													// retained
+			final ImagePlus maskImp = imp3.duplicate(); // Calibration will be
+			// retained
 			IJ.setThreshold(maskImp, i, i); // TODO: Use
 											// ImagePlus/ImageProcessor API
 			IJ.run(maskImp, "Convert to Mask", "");
 
 			// Analyze segmented order
-			AnalyzeSkeleton_ maskAs = new AnalyzeSkeleton_();
+			final AnalyzeSkeleton_ maskAs = new AnalyzeSkeleton_();
 			maskAs.setup("", maskImp);
-			SkeletonResult maskSr = maskAs.run(pruneChoice, false, false, origImp, true, false);
+			final SkeletonResult maskSr = maskAs.run(pruneChoice, false, false, origImp, true, false);
 			maskImp.flush();
 
 			// Since all branches are disconnected at this stage, the n. of
@@ -365,7 +363,7 @@ public class Strahler implements PlugIn, DialogListener {
 			// with no slab voxels (defined by just an end-point). We will
 			// ignore those
 			// trees if the user requested it
-			int nBranches = (erodeIsolatedPixels) ? sum(maskSr.getBranches()) : maskSr.getNumOfTrees();
+			final int nBranches = (erodeIsolatedPixels) ? sum(maskSr.getBranches()) : maskSr.getNumOfTrees();
 
 			// Log measurements
 			rt.incrementCounter();
@@ -383,7 +381,7 @@ public class Strahler implements PlugIn, DialogListener {
 			rt.addValue("Notes", noteMsg);
 
 			// Remember results for previous order
-			prevNbranches = (double) nBranches;
+			prevNbranches = nBranches;
 
 		}
 
@@ -398,7 +396,7 @@ public class Strahler implements PlugIn, DialogListener {
 			try {
 				Class.forName("bogus");
 				// ip3.setColorModel(Sholl_Utils.matlabJetColorMap(0));
-			} catch (ClassNotFoundException ignored) {
+			} catch (final ClassNotFoundException ignored) {
 				IJ.run(imp3, "Fire", "");
 			}
 			if (validRootRoi)
@@ -417,8 +415,8 @@ public class Strahler implements PlugIn, DialogListener {
 	}
 
 	/* Checks if image fulfills analysis requirements */
-	boolean validImage(ImagePlus imp) {
-		boolean valid = imp != null && imp.getBitDepth() == 8;
+	boolean validImage(final ImagePlus imp) {
+		final boolean valid = imp != null && imp.getBitDepth() == 8;
 		if (!valid)
 			IJ.error("Strahler Analysis", "An 8-bit image is required but none was found.");
 		return valid;
@@ -431,10 +429,10 @@ public class Strahler implements PlugIn, DialogListener {
 	 * option to resolve loops with intensity based methods remains useful
 	 * specially when analyzing non-thinned grayscale images.
 	 */
-	ImagePlus getOriginalImp(String grayscaleImgChoice) {
+	ImagePlus getOriginalImp(final String grayscaleImgChoice) {
 
-		GenericDialog gd = new GenericDialog("Strahler Analysis v" + VERSION);
-		Font headerFont = new Font("SansSerif", Font.BOLD, 12);
+		final GenericDialog gd = new GenericDialog("Strahler Analysis v" + VERSION);
+		final Font headerFont = new Font("SansSerif", Font.BOLD, 12);
 		gd.setSmartRecording(true);
 
 		// Part 1. Main Options
@@ -452,18 +450,17 @@ public class Strahler implements PlugIn, DialogListener {
 		// 8-bit grayscale is the only image type recognized by
 		// AnalyzeSkeleton_,
 		// so we'll provide the user with a pre-filtered list of valid choices
-		ArrayList<Integer> validIds = new ArrayList<Integer>();
-		ArrayList<String> validTitles = new ArrayList<String>();
-		int[] ids = WindowManager.getIDList();
+		final ArrayList<Integer> validIds = new ArrayList<Integer>();
+		final ArrayList<String> validTitles = new ArrayList<String>();
+		final int[] ids = WindowManager.getIDList();
 		for (int i = 0; i < ids.length; ++i) {
-			ImagePlus imp = WindowManager.getImage(ids[i]);
+			final ImagePlus imp = WindowManager.getImage(ids[i]);
 			if (imp.getBitDepth() == 8) { // TODO: ignore composites?
 				validIds.add(ids[i]);
 				validTitles.add(imp.getTitle());
 			}
 		}
-		gd.addChoice("8-bit grayscale image:", (String[]) validTitles.toArray(new String[validTitles.size()]),
-				grayscaleImgChoice);
+		gd.addChoice("8-bit grayscale image:", validTitles.toArray(new String[validTitles.size()]), grayscaleImgChoice);
 
 		// Part 3: Output
 		gd.setInsets(25, 0, 0);
@@ -477,11 +474,12 @@ public class Strahler implements PlugIn, DialogListener {
 		dialogItemChanged(gd, null);
 		gd.showDialog();
 
-		return (gd.wasCanceled()) ? null : WindowManager.getImage((int) validIds.get(imgChoice));
+		return (gd.wasCanceled()) ? null : WindowManager.getImage(validIds.get(imgChoice));
 	}
 
 	/* Retrive dialog options using the DialogListener interface */
-	public boolean dialogItemChanged(GenericDialog gd, java.awt.AWTEvent e) {
+	@Override
+	public boolean dialogItemChanged(final GenericDialog gd, final java.awt.AWTEvent e) {
 
 		maxPruning = (int) gd.getNextNumber();
 		protecRoot = gd.getNextBoolean();
@@ -493,12 +491,12 @@ public class Strahler implements PlugIn, DialogListener {
 		tabular = gd.getNextBoolean();
 
 		// Enable/Disable key components of GenericDialog
-		Choice cImgChoice = (Choice) gd.getChoices().elementAt(1);
+		final Choice cImgChoice = (Choice) gd.getChoices().elementAt(1);
 		cImgChoice.setEnabled((pruneChoice > 1) ? true : false);
-		Vector<?> checkboxes = gd.getCheckboxes();
-		Checkbox roiOption = (Checkbox) checkboxes.elementAt(0);
+		final Vector<?> checkboxes = gd.getCheckboxes();
+		final Checkbox roiOption = (Checkbox) checkboxes.elementAt(0);
 		roiOption.setEnabled(validRootRoi);
-		Checkbox stackOption = (Checkbox) checkboxes.elementAt(2);
+		final Checkbox stackOption = (Checkbox) checkboxes.elementAt(2);
 		stackOption.setEnabled(!tabular);
 		return !gd.wasCanceled();
 
@@ -507,9 +505,9 @@ public class Strahler implements PlugIn, DialogListener {
 	/*
 	 * Returns the table of the specified window title setting common properties
 	 */
-	ResultsTable getTable(String title) {
+	ResultsTable getTable(final String title) {
 		ResultsTable rt = null;
-		Window window = WindowManager.getWindow(title);
+		final Window window = WindowManager.getWindow(title);
 		if (window != null)
 			rt = ((TextWindow) window).getTextPanel().getResultsTable();
 		if (rt == null)
@@ -521,30 +519,30 @@ public class Strahler implements PlugIn, DialogListener {
 	}
 
 	/* Returns the sum of elements of an int[] array */
-	int sum(int[] array) {
+	int sum(final int[] array) {
 		int sum = 0;
 		if (array != null)
-			for (int i : array)
+			for (final int i : array)
 				sum += i;
 		return sum;
 	}
 
 	/* Returns the sum of elements of a double[] array */
-	double sum(double[] array) {
+	double sum(final double[] array) {
 		double sum = 0;
 		if (array != null)
-			for (double i : array)
+			for (final double i : array)
 				sum += i;
 		return sum;
 	}
 
 	/* Returns the average of an int[]/double[] array */
-	double average(double[] array) {
+	double average(final double[] array) {
 		return sum(array) / array.length;
 	}
 
 	/* Returns the average of an int[]/double[] array */
-	double average(int[] array) {
+	double average(final int[] array) {
 		return sum(array) / array.length;
 	}
 
@@ -553,11 +551,11 @@ public class Strahler implements PlugIn, DialogListener {
 	 * paintPoints(ImageStack stack, ArrayList<Point> points, int value, String
 	 * label) triggers a ParseException
 	 */
-	void paintPoints(ImageStack stack, ArrayList<Point> points, int value, String sliceLabel) {
+	void paintPoints(final ImageStack stack, final ArrayList<Point> points, final int value, final String sliceLabel) {
 		if (points != null) {
-			ImageProcessor ipp = ip.createProcessor(stack.getWidth(), stack.getHeight());
+			final ImageProcessor ipp = ip.createProcessor(stack.getWidth(), stack.getHeight());
 			for (int j = 0; j < points.size(); j++) {
-				Point point = points.get(j);
+				final Point point = points.get(j);
 				ipp.putPixel(point.x, point.y, value);
 			}
 			stack.addSlice(sliceLabel, ipp);
@@ -565,10 +563,10 @@ public class Strahler implements PlugIn, DialogListener {
 	}
 
 	/* Clears point positions */
-	void clearPoints(ImageProcessor ip, ArrayList<Point> points) {
+	void clearPoints(final ImageProcessor ip, final ArrayList<Point> points) {
 		if (points != null) {
 			for (int j = 0; j < points.size(); j++) {
-				Point point = points.get(j);
+				final Point point = points.get(j);
 				ip.putPixel(point.x, point.y, 0);
 			}
 		}
@@ -580,12 +578,12 @@ public class Strahler implements PlugIn, DialogListener {
 	 * point arbors. These 'debris' trees have 1 end-point but no branches or
 	 * junctions. If present they overestimate the total number of end-points
 	 */
-	void skeletonizeWithoutHermits(ImagePlus imp) {
-		Skeletonize3D_ thin = new Skeletonize3D_();
+	void skeletonizeWithoutHermits(final ImagePlus imp) {
+		final Skeletonize3D_ thin = new Skeletonize3D_();
 		thin.setup("", imp);
 		thin.run(null);
 		if (erodeIsolatedPixels) {
-			ImageStack stack = imp.getStack();
+			final ImageStack stack = imp.getStack();
 			for (int i = 1; i <= stack.getSize(); i++)
 				((ByteProcessor) stack.getProcessor(i)).erode(8, 0);
 		}
@@ -595,12 +593,12 @@ public class Strahler implements PlugIn, DialogListener {
 	 * Runs ij.plugin.CalibrationBar on the specified image using a suitable
 	 * scale
 	 */
-	void addCalibrationBar(ImagePlus imp, int nLabels) {
-		ImageCanvas ic = imp.getCanvas();
+	void addCalibrationBar(final ImagePlus imp, final int nLabels) {
+		final ImageCanvas ic = imp.getCanvas();
 		double zoom = 1.0;
-		double mag = (ic != null) ? ic.getMagnification() : 1.0;
+		final double mag = (ic != null) ? ic.getMagnification() : 1.0;
 		if (zoom <= 1 && mag < 1)
-			zoom = (double) 1.0 / mag;
+			zoom = 1.0 / mag;
 		IJ.run(imp, "Calibration Bar...", "fill=Black label=White number=" + nLabels + " zoom=" + zoom + " overlay");
 	}
 }
