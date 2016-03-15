@@ -1,25 +1,15 @@
 package ipnat.skel;
 
-/* Strahler_Analysis.bsh
- * IJ BAR: https://github.com/tferr/Scripts#scripts
+/*
+ * hIPNAT: (highly effective) Image Processing for NeuroAnatomy and Tree-like Structures
+ * https://github.com/tferr/hIPNAT
  *
- * BeanShell script that performs Strahler analysis in ImageJ by repeated elimination of
- * terminal branches of topographic 2D/3D skeletons (http://fiji.sc/Strahler)
- * Tiago Ferreira, 2013-2016
- *
- * Requirements:
- * Up-to-date versions of Ignacio Arganda-Carreras Skeletonize[1] and AnalyzeSkeleton[2]
- * plugins. Both are bundled with Fiji (http://fiji.sc/) but can be otherwise downloaded
- * from http://jenkins.imagej.net/job/Stable-Fiji/ws/Fiji.app/plugins/
- * [1] http://fiji.sc/Skeletonize3D
- * [2] http://fiji.sc/AnalyzeSkeleton
- *
- * This program is free software; you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software Foundation
+ * This program is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation
  * (http://www.gnu.org/licenses/gpl.txt).
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
  */
 
 import java.awt.Checkbox;
@@ -94,31 +84,10 @@ public class Strahler implements PlugIn, DialogListener {
 	@Override
 	public void run(final String arg) {
 
+		// Check all the required update sites have been subscribed
 		final Utils utils = new ipnat.Utils();
 		if (!utils.validSkelDependencies())
 			return;
-
-		// Before starting we'll inform non-Fiji users of required dependencies
-		try {
-			Class.forName("sc.fiji.analyzeSkeleton.AnalyzeSkeleton_");
-			Class.forName("sc.fiji.skeletonize3D.Skeletonize3D_");
-		} catch (final ClassNotFoundException e) {
-			String msg = "\n**** Strahler Analysis Error: Required file(s) not found:\n" + e + "\n \n"
-					+ "Strahler Analysis requires a recent version of AnalyzeSkeleton_.jar and Skeletonize3D_.jar.\n"
-					+ "The easiest way to install these files is to use Fiji:\n";
-			try {
-				Class.forName("net.imagej.ui.swing.updater.ImageJUpdater");
-			} catch (final ClassNotFoundException ignored) {
-				msg += "Please download a modern version of ImageJ from http://imagej.net/Downloads, then\n";
-			}
-			msg += "Run Help>Update and ensure you are subscribed to the Fiji update site.\n \n"
-					+ "Please visit http://forum.imagej.net/ if you come across any hurdles.";
-			// IJ.handleException(e);
-			IJ.log(msg);
-			IJ.error("Strahler Analysis Error",
-					"Dependencies not found!\nCheck the Log window for installation details.");
-			return;
-		}
 
 		// Retrieve analysis image and its ROI
 		final ImagePlus srcImp = WindowManager.getCurrentImage();
