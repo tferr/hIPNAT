@@ -1,0 +1,22 @@
+*.class
+*.jar
+*.war
+*.ear
+
+# Maven #
+/target/
+/bin/apache-maven-*/
+
+# Eclipse #
+/.checksums
+/.metadata
+/.project
+/.classpath
+/.settings/
+
+# OSes #
+.DS_Store
+Thumbs.db
+
+# Jython #
+*$py.class
