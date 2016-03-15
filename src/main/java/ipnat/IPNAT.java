@@ -1,5 +1,7 @@
 package ipnat;
 
+import ij.IJ;
+
 /*
  * hIPNAT: (highly effective) Image Processing for NeuroAnatomy and Tree-like Structures
  * https://github.com/tferr/hIPNAT
@@ -29,4 +31,11 @@ public class IPNAT {
 			s += "-" + BUILD;
 		return s;
 	}
+
+	public static void handleException(Exception e) {
+		IJ.setExceptionHandler(new ipnat.ExceptionHandler());
+		IJ.handleException(e);
+		IJ.setExceptionHandler(null); // Revert to the default behavior
+	}
+
 }
