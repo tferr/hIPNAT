@@ -13,7 +13,7 @@
 	</parent>
 
 <groupId>com.github.tferr</groupId>
-<artifactId>hIPNAT</artifactId>
+<artifactId>hIPNAT_</artifactId>
 <version>0.0.1-SNAPSHOT</version>
 
 <name>hipnat_.jar</name>
