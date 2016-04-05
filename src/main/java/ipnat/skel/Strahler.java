@@ -43,11 +43,11 @@ import ij.measure.Calibration;
 import ij.measure.ResultsTable;
 import ij.plugin.PlugIn;
 import ij.plugin.ZProjector;
-import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import ij.text.TextWindow;
 import ipnat.ColorMaps;
 import ipnat.Utils;
+import ipnat.processing.Binary;
 import sc.fiji.analyzeSkeleton.AnalyzeSkeleton_;
 import sc.fiji.analyzeSkeleton.Point;
 import sc.fiji.analyzeSkeleton.SkeletonResult;
@@ -558,11 +558,8 @@ public class Strahler implements PlugIn, DialogListener {
 		final Skeletonize3D_ thin = new Skeletonize3D_();
 		thin.setup("", imp);
 		thin.run(null);
-		if (erodeIsolatedPixels) {
-			final ImageStack stack = imp.getStack();
-			for (int i = 1; i <= stack.getSize(); i++)
-				((ByteProcessor) stack.getProcessor(i)).erode(8, 0);
-		}
+		if (erodeIsolatedPixels)
+			Binary.removeIsolatedPixels(imp);
 	}
 
 	/*
