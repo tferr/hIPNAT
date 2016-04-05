@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.ListIterator;
 import java.util.Vector;
 
+import fiji.Debug;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -91,6 +92,15 @@ public class Strahler implements PlugIn, DialogListener {
 	ImageProcessor ip;
 	int imgChoice;
 	boolean protecRoot;
+
+	/**
+	 * Calls {@link fiji.Debug#run(String, String) fiji.Debug.run()} so that the
+	 * plugin can be debugged from an IDE
+	 */
+	public static void main(final String[] args) {
+		Debug.run("Strahler Analysis...", null); // Label specified in plugins.config
+	}
+
 
 	@Override
 	public void run(final String arg) {
