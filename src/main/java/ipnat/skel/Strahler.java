@@ -46,6 +46,7 @@ import ij.plugin.ZProjector;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import ij.text.TextWindow;
+import ipnat.ColorMaps;
 import ipnat.Utils;
 import sc.fiji.analyzeSkeleton.AnalyzeSkeleton_;
 import sc.fiji.analyzeSkeleton.Point;
@@ -372,12 +373,8 @@ public class Strahler implements PlugIn, DialogListener {
 			if (outIS)
 				imp2.show();
 			ip3.setMinAndMax(0, order);
-			try {
-				Class.forName("bogus");
-				// ip3.setColorModel(Sholl_Utils.matlabJetColorMap(0));
-			} catch (final ClassNotFoundException ignored) {
-				IJ.run(imp3, "Fire", "");
-			}
+			//ColorMaps.applyViridisColorMap(imp3, 0);
+			ColorMaps.applyMagmaColorMap(imp3);
 			if (validRootRoi)
 				imp3.setRoi(roi);
 			imp3.show();
