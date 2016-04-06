@@ -86,11 +86,16 @@ public class Strahler implements PlugIn, DialogListener {
 	/* Version of the program */
 	String VERSION = "1.5.1 2016.01.19";
 
-	/* Flag for 'root-protective' ROI */
-	private static boolean validRootRoi;
+	/* Grayscale image for intensity-based pruning of skel. loops */
+	ImagePlus grayscaleImp = null;
+	int grayscaleImpChoice;
 
+	ImagePlus srcImp;		// Image to be analyzed (we'll be working on a copy)
+	boolean validRootRoi;	// Flag assessing validity of 'root-protective' ROI
+	String title;			// Title of active image
+	Roi rootRoi;			// Reference to the "root-protecting" ROI
 	ImageProcessor ip;
-	int imgChoice;
+
 
 	/**
 	 * Calls {@link fiji.Debug#run(String, String) fiji.Debug.run()} so that the
@@ -108,9 +113,10 @@ public class Strahler implements PlugIn, DialogListener {
 		srcImp = WindowManager.getCurrentImage();
 		if (!validRequirements(srcImp))
 			return;
-		final String title = srcImp.getTitle();
-		final Roi roi = srcImp.getRoi();
-		validRootRoi = (roi != null && roi.getType() == Roi.RECTANGLE);
+
+		title = srcImp.getTitle();
+		rootRoi = srcImp.getRoi();
+		validRootRoi = (rootRoi != null && rootRoi.getType() == Roi.RECTANGLE);
 
 		// TODO: 3D Roots are special. We need to:
 		// 1) Check if ROI is associated with all slices or just one
@@ -127,11 +133,11 @@ public class Strahler implements PlugIn, DialogListener {
 			return;
 
 		// Work on a skeletonized copy since we'll be modifing the image
-		if (roi != null)
+		if (rootRoi != null)
 			srcImp.killRoi();
 		final ImagePlus imp = srcImp.duplicate();
-		if (roi != null)
-			srcImp.setRoi(roi);
+		if (rootRoi != null)
+			srcImp.setRoi(rootRoi);
 		ip = imp.getProcessor();
 		skeletonizeWithoutHermits(imp);
 
@@ -152,12 +158,12 @@ public class Strahler implements PlugIn, DialogListener {
 			rootImp = imp.duplicate();
 			rootIp = rootImp.getProcessor();
 			rootIp.setValue(0.0);
-			rootIp.fillOutside(roi);
+			rootIp.fillOutside(rootRoi);
 
 			// Get root properties
 			final AnalyzeSkeleton_ root = new AnalyzeSkeleton_();
 			root.setup("", rootImp);
-			rootResult = root.run(pruneChoice, false, false, origImp, true, false);
+			rootResult = root.run(pruneChoice, false, false, grayscaleImp, true, false);
 			rootImp.flush();
 
 			// We assume ROI contains only end-point branches, slab voxels and
@@ -166,7 +172,7 @@ public class Strahler implements PlugIn, DialogListener {
 			nRootJunctions = sum(rootResult.getJunctions());
 			rootEndpointsList = rootResult.getListOfEndPoints();
 			final ListIterator<Point> it = rootEndpointsList.listIterator();
-			final Rectangle r = roi.getBounds();
+			final Rectangle r = rootRoi.getBounds();
 			while (it.hasNext()) {
 				final Point p = it.next();
 				if (p.x == r.x || p.y == r.y || p.x == r.x + r.getWidth() - 1 || p.y == r.y + r.getHeight() - 1)
@@ -209,7 +215,7 @@ public class Strahler implements PlugIn, DialogListener {
 				skeletonizeWithoutHermits(imp);
 
 			// Get properties of loop-resolved tree(s)
-			final SkeletonResult sr = as.run(pruneChoice, false, false, origImp, true, false);
+			final SkeletonResult sr = as.run(pruneChoice, false, false, grayscaleImp, true, false);
 			nEndpoints = sum(sr.getEndPoints());
 			nJunctions = sum(sr.getJunctions());
 
@@ -259,7 +265,7 @@ public class Strahler implements PlugIn, DialogListener {
 			nJunctions2 = nJunctions;
 
 			// Eliminate end-points
-			as.run(pruneChoice, true, false, origImp, true, false, roi);
+			as.run(pruneChoice, true, false, grayscaleImp, true, false, rootRoi);
 
 		} while (order++ <= maxPruning && nJunctions > 0);
 
@@ -305,7 +311,7 @@ public class Strahler implements PlugIn, DialogListener {
 			if (validRootRoi) {
 				iterationStack.addSlice("Root", rootIp);
 				paintPoints(iterationStack, rootEndpointsList, 255, "Root end-points");
-				imp2.setRoi(roi);
+				imp2.setRoi(rootRoi);
 			}
 			paintPoints(iterationStack, endpointsList, 255, "End-points");
 			paintPoints(iterationStack, junctionsList, 255, "Junction-points");
@@ -335,7 +341,7 @@ public class Strahler implements PlugIn, DialogListener {
 			// Analyze segmented order
 			final AnalyzeSkeleton_ maskAs = new AnalyzeSkeleton_();
 			maskAs.setup("", maskImp);
-			final SkeletonResult maskSr = maskAs.run(pruneChoice, false, false, origImp, true, false);
+			final SkeletonResult maskSr = maskAs.run(pruneChoice, false, false, grayscaleImp, true, false);
 			maskImp.flush();
 
 			// Since all branches are disconnected at this stage, the n. of
@@ -378,7 +384,7 @@ public class Strahler implements PlugIn, DialogListener {
 			//ColorMaps.applyViridisColorMap(imp3, 0);
 			ColorMaps.applyMagmaColorMap(imp3);
 			if (validRootRoi)
-				imp3.setRoi(roi);
+				imp3.setRoi(rootRoi);
 			imp3.show();
 			addCalibrationBar(imp3, Math.min(order, 5));
 		}
@@ -448,7 +454,7 @@ public class Strahler implements PlugIn, DialogListener {
 				validTitles.add(imp.getTitle());
 			}
 		}
-		gd.addChoice("8-bit grayscale image:", validTitles.toArray(new String[validTitles.size()]), grayscaleImgChoice);
+		gd.addChoice("8-bit grayscale image:", validTitles.toArray(new String[validTitles.size()]), title);
 
 		// Part 3: Output
 		gd.setInsets(25, 0, 0);
@@ -462,12 +468,11 @@ public class Strahler implements PlugIn, DialogListener {
 		dialogItemChanged(gd, null);
 		gd.showDialog();
 
-		// Define grayscale image used for solving closed-loops in the original skeleton 
-		if (imgChoice == AnalyzeSkeleton_.LOWEST_INTENSITY_VOXEL
-				|| imgChoice == AnalyzeSkeleton_.LOWEST_INTENSITY_BRANCH) {
-			origImp = WindowManager.getImage(validIds.get(imgChoice));
+		if (grayscaleImpChoice == AnalyzeSkeleton_.LOWEST_INTENSITY_VOXEL
+				|| grayscaleImpChoice == AnalyzeSkeleton_.LOWEST_INTENSITY_BRANCH) {
+			grayscaleImp = WindowManager.getImage(validIds.get(grayscaleImpChoice));
 		} else {
-			origImp = null;
+			grayscaleImp = null;
 		}
 
 		return origImp;
@@ -482,7 +487,7 @@ public class Strahler implements PlugIn, DialogListener {
 		protectRoot = gd.getNextBoolean();
 		erodeIsolatedPixels = gd.getNextBoolean();
 		pruneChoice = gd.getNextChoiceIndex();
-		imgChoice = gd.getNextChoiceIndex();
+		grayscaleImpChoice = gd.getNextChoiceIndex();
 		outIS = gd.getNextBoolean();
 		verbose = gd.getNextBoolean();
 		tabular = gd.getNextBoolean();
@@ -491,11 +496,13 @@ public class Strahler implements PlugIn, DialogListener {
 		final Choice cImgChoice = (Choice) gd.getChoices().elementAt(1);
 		final Vector<?> checkboxes = gd.getCheckboxes();
 		final Checkbox roiOption = (Checkbox) checkboxes.elementAt(0);
-		roiOption.setEnabled(validRootRoi);
 		final Checkbox stackOption = (Checkbox) checkboxes.elementAt(2);
+
+		cImgChoice.setEnabled(grayscaleImpChoice == AnalyzeSkeleton_.LOWEST_INTENSITY_VOXEL
+				|| grayscaleImpChoice == AnalyzeSkeleton_.LOWEST_INTENSITY_BRANCH);
+		roiOption.setEnabled(validRootRoi);
 		stackOption.setEnabled(!tabular);
-			cImgChoice.setEnabled(imgChoice == AnalyzeSkeleton_.LOWEST_INTENSITY_VOXEL
-					|| imgChoice == AnalyzeSkeleton_.LOWEST_INTENSITY_BRANCH);
+
 		return !gd.wasCanceled();
 
 	}
