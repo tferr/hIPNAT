@@ -57,7 +57,7 @@ import sc.fiji.skeletonize3D.Skeletonize3D_;
 public class Strahler implements PlugIn, DialogListener {
 
 	/* Default value for max. number of pruning cycles */
-	int maxPruning = 10;
+	int maxOrder = 30;
 
 	/* Default option for loop detection */
 	int pruneChoice = AnalyzeSkeleton_.SHORTEST_BRANCH;
@@ -207,7 +207,7 @@ public class Strahler implements PlugIn, DialogListener {
 		do {
 
 			IJ.showStatus("Retrieving measurements for order " + order + "...");
-			IJ.showProgress(order, maxPruning);
+			IJ.showProgress(order, getMaxOrder());
 
 			// (Re)skeletonize image
 			if (order > 1)
@@ -266,7 +266,7 @@ public class Strahler implements PlugIn, DialogListener {
 			// Eliminate end-points
 			as.run(pruneChoice, true, false, grayscaleImp, true, false, rootRoi);
 
-		} while (order++ <= maxPruning && nJunctions > 0);
+		} while (order++ <= getMaxOrder() && nJunctions > 0);
 
 		// Set counter to the de facto order
 		order -= 1;
@@ -430,8 +430,7 @@ public class Strahler implements PlugIn, DialogListener {
 
 		// Part 1. Main Options
 		gd.setInsets(0, 0, 0);
-		gd.addMessage("Strahler Numbering:", headerFont);
-		gd.addSlider("     Max. n. of iterations:", 1, 20, maxPruning);
+		gd.addMessage("Tree Classification:", headerFont);
 		gd.addCheckbox("Infer root end-points from rectangular ROI", protectRoot);
 		gd.addCheckbox("Ignore single-point arbors (Isolated pixels)", erodeIsolatedPixels);
 
@@ -482,7 +481,6 @@ public class Strahler implements PlugIn, DialogListener {
 	@Override
 	public boolean dialogItemChanged(final GenericDialog gd, final java.awt.AWTEvent e) {
 
-		maxPruning = (int) gd.getNextNumber();
 		protectRoot = gd.getNextBoolean();
 		erodeIsolatedPixels = gd.getNextBoolean();
 		pruneChoice = gd.getNextChoiceIndex();
@@ -604,4 +602,13 @@ public class Strahler implements PlugIn, DialogListener {
 			zoom = 1.0 / mag;
 		IJ.run(imp, "Calibration Bar...", "fill=Black label=White number=" + nLabels + " zoom=" + zoom + " overlay");
 	}
+
+	public int getMaxOrder() {
+		return maxOrder;
+	}
+
+	public void setMaxOrder(int maxOrder) {
+		this.maxOrder = maxOrder;
+	}
+
 }
