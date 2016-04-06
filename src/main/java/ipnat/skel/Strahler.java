@@ -458,7 +458,16 @@ public class Strahler implements PlugIn, DialogListener {
 		dialogItemChanged(gd, null);
 		gd.showDialog();
 
-		return (gd.wasCanceled()) ? null : WindowManager.getImage(validIds.get(imgChoice));
+		// Define grayscale image used for solving closed-loops in the original skeleton 
+		if (imgChoice == AnalyzeSkeleton_.LOWEST_INTENSITY_VOXEL
+				|| imgChoice == AnalyzeSkeleton_.LOWEST_INTENSITY_BRANCH) {
+			origImp = WindowManager.getImage(validIds.get(imgChoice));
+		} else {
+			origImp = null;
+		}
+
+		return origImp;
+
 	}
 
 	/* Retrive dialog options using the DialogListener interface */
@@ -476,12 +485,13 @@ public class Strahler implements PlugIn, DialogListener {
 
 		// Enable/Disable key components of GenericDialog
 		final Choice cImgChoice = (Choice) gd.getChoices().elementAt(1);
-		cImgChoice.setEnabled((pruneChoice > 1) ? true : false);
 		final Vector<?> checkboxes = gd.getCheckboxes();
 		final Checkbox roiOption = (Checkbox) checkboxes.elementAt(0);
 		roiOption.setEnabled(validRootRoi);
 		final Checkbox stackOption = (Checkbox) checkboxes.elementAt(2);
 		stackOption.setEnabled(!tabular);
+			cImgChoice.setEnabled(imgChoice == AnalyzeSkeleton_.LOWEST_INTENSITY_VOXEL
+					|| imgChoice == AnalyzeSkeleton_.LOWEST_INTENSITY_BRANCH);
 		return !gd.wasCanceled();
 
 	}
