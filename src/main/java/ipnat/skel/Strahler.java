@@ -105,14 +105,9 @@ public class Strahler implements PlugIn, DialogListener {
 	@Override
 	public void run(final String arg) {
 
-		// Check all the required update sites have been subscribed
-		final Utils utils = new ipnat.Utils();
-		if (!utils.validSkelDependencies())
-			return;
-
 		// Retrieve analysis image and its ROI
-		final ImagePlus srcImp = WindowManager.getCurrentImage();
-		if (!validImage(srcImp))
+		srcImp = WindowManager.getCurrentImage();
+		if (!validRequirements(srcImp))
 			return;
 		final String title = srcImp.getTitle();
 		final Roi roi = srcImp.getRoi();
@@ -398,12 +393,22 @@ public class Strahler implements PlugIn, DialogListener {
 
 	}
 
-	/* Checks if image fulfills analysis requirements */
-	boolean validImage(final ImagePlus imp) {
-		final boolean valid = imp != null && imp.getBitDepth() == 8;
-		if (!valid)
+	/**
+	 * Checks if image fulfills analysis requirements and warns the user if
+	 * required dependencies are present (i.e,, if all the required update sites
+	 * have been subscribed).
+	 *
+	 * @param imp
+	 *            the image to be analyzed
+	 * @return {@code true}, if check was successful. If {@code false} an error
+	 *         message is displayed.
+	 */
+	boolean validRequirements(final ImagePlus imp) {
+		final boolean validImp = imp != null && imp.getBitDepth() == 8;
+		final boolean validSetup = new ipnat.Utils().validSkelDependencies();
+		if (!validImp)
 			IJ.error("Strahler Analysis", "An 8-bit image is required but none was found.");
-		return valid;
+		return validSetup && validImp;
 	}
 
 	/*
