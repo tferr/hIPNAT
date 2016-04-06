@@ -91,7 +91,6 @@ public class Strahler implements PlugIn, DialogListener {
 
 	ImageProcessor ip;
 	int imgChoice;
-	boolean protecRoot;
 
 	/**
 	 * Calls {@link fiji.Debug#run(String, String) fiji.Debug.run()} so that the
@@ -480,7 +479,7 @@ public class Strahler implements PlugIn, DialogListener {
 	public boolean dialogItemChanged(final GenericDialog gd, final java.awt.AWTEvent e) {
 
 		maxPruning = (int) gd.getNextNumber();
-		protecRoot = gd.getNextBoolean();
+		protectRoot = gd.getNextBoolean();
 		erodeIsolatedPixels = gd.getNextBoolean();
 		pruneChoice = gd.getNextChoiceIndex();
 		imgChoice = gd.getNextChoiceIndex();
