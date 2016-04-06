@@ -492,15 +492,17 @@ public class Strahler implements PlugIn, DialogListener {
 		tabular = gd.getNextBoolean();
 
 		// Enable/Disable key components of GenericDialog
-		final Choice cImgChoice = (Choice) gd.getChoices().elementAt(1);
-		final Vector<?> checkboxes = gd.getCheckboxes();
-		final Checkbox roiOption = (Checkbox) checkboxes.elementAt(0);
-		final Checkbox stackOption = (Checkbox) checkboxes.elementAt(2);
+		if (IJ.macroRunning()) {
+			final Choice cImgChoice = (Choice) gd.getChoices().elementAt(1);
+			final Vector<?> checkboxes = gd.getCheckboxes();
+			final Checkbox roiOption = (Checkbox) checkboxes.elementAt(0);
+			final Checkbox stackOption = (Checkbox) checkboxes.elementAt(2);
 
-		cImgChoice.setEnabled(grayscaleImpChoice == AnalyzeSkeleton_.LOWEST_INTENSITY_VOXEL
-				|| grayscaleImpChoice == AnalyzeSkeleton_.LOWEST_INTENSITY_BRANCH);
-		roiOption.setEnabled(validRootRoi);
-		stackOption.setEnabled(!tabular);
+			cImgChoice.setEnabled(grayscaleImpChoice == AnalyzeSkeleton_.LOWEST_INTENSITY_VOXEL
+					|| grayscaleImpChoice == AnalyzeSkeleton_.LOWEST_INTENSITY_BRANCH);
+			roiOption.setEnabled(validRootRoi);
+			stackOption.setEnabled(!tabular);
+		}
 
 		return !gd.wasCanceled();
 
