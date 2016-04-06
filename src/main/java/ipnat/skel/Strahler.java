@@ -128,8 +128,7 @@ public class Strahler implements PlugIn, DialogListener {
 		}
 
 		// Retrieve grayscale image for intensity-based pruning of skel. loops
-		final ImagePlus origImp = getOriginalImp(title);
-		if (origImp == null)
+		if (!getSettings())
 			return;
 
 		// Work on a skeletonized copy since we'll be modifing the image
@@ -423,7 +422,7 @@ public class Strahler implements PlugIn, DialogListener {
 	 * option to resolve loops with intensity based methods remains useful
 	 * specially when analyzing non-thinned grayscale images.
 	 */
-	ImagePlus getOriginalImp(final String grayscaleImgChoice) {
+	boolean getSettings() {
 
 		final GenericDialog gd = new GenericDialog("Strahler Analysis v" + VERSION);
 		final Font headerFont = new Font("SansSerif", Font.BOLD, 12);
@@ -475,7 +474,7 @@ public class Strahler implements PlugIn, DialogListener {
 			grayscaleImp = null;
 		}
 
-		return origImp;
+		return dialogItemChanged(gd, null);
 
 	}
 
