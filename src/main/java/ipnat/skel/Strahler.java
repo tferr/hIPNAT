@@ -103,9 +103,6 @@ public class Strahler implements PlugIn, DialogListener {
 	/* Title of detailed results window */
 	String VERBOSE_TABLE = "Strahler_Iteration_Log";
 
-	/* Version of the program */
-	String VERSION = "1.5.1 2016.01.19";
-
 	/*
 	 * Grayscale image for intensity-based pruning of skel. loops. While it is
 	 * unlikely that the iterative pruning of terminal branches will cause new
@@ -327,13 +324,8 @@ public class Strahler implements PlugIn, DialogListener {
 		}
 
 		// Safety check
-		if (iterationStack == null || iterationStack.getSize() < 1) { // TODO:
-																		// Make
-																		// error
-																		// more
-																		// informative
-			error("Could not complete analysis!\n" + "Enable verbose mode and check "
-					+ VERBOSE_TABLE + " for details.");
+		if (iterationStack == null || iterationStack.getSize() < 1) {
+			error("Enable \"detailed\" mode and check " + VERBOSE_TABLE + " for details.");
 			return;
 		}
 
