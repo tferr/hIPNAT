@@ -27,6 +27,8 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 
+import ij.IJ;
+import ij.ImagePlus;
 import ij.Menus;
 
 public class Utils {
@@ -34,6 +36,34 @@ public class Utils {
 	/** Private constructor to prevent class instantiation. */
 	private Utils() {
 	}
+
+	/**
+	 * Macro-friendly error message.
+	 *
+	 * If a macro is running it will not be aborted and the error message is
+	 * displayed in the "Log" window (or the Java console if ImageJ is not
+	 * present). Otherwise displays a regular {@link ij.IJ#error(String)
+	 * IJ.error()}.
+	 *
+	 * @param errorTitle
+	 *            The error title
+	 * @param errorMsg
+	 *            The error message
+	 * @param imp
+	 *            The Image to be mentioned in the message. It is ignored if
+	 *            {@code null}
+	 */
+	public static void error(final String errorTitle, final String errorMsg, final ImagePlus imp) {
+		String title = IPNAT.getReadableVersion();
+		if (errorTitle != null)
+			title = errorTitle + " (" + title + ")";
+		final String impMsg = (imp == null) ? "" : "Error while processing " + imp.getTitle();
+		if (IJ.macroRunning())
+			IJ.log("\n>>> " + title + ": " + impMsg + "\n" + errorMsg);
+		else
+			IJ.error(title, impMsg + "\n" + errorMsg);
+	}
+
 	public static boolean validSkelDependencies() {
 		return classExists(
 				Arrays.asList("sc.fiji.analyzeSkeleton.AnalyzeSkeleton_", "sc.fiji.skeletonize3D.Skeletonize3D_"));

@@ -46,6 +46,7 @@ import ij.plugin.ZProjector;
 import ij.process.ImageProcessor;
 import ij.text.TextWindow;
 import ipnat.ColorMaps;
+import ipnat.Utils;
 import ipnat.processing.Binary;
 import sc.fiji.analyzeSkeleton.AnalyzeSkeleton_;
 import sc.fiji.analyzeSkeleton.Point;
@@ -146,7 +147,7 @@ public class Strahler implements PlugIn, DialogListener {
 		// 2) Ignore counts above/below the ROI, as needed
 		// 3) Extend ip operations to stack
 		if (validRootRoi && srcImp.getNSlices() > 1) {
-			IJ.error("Strahler Analysis warning", "'Root-ROI' works for 2D but not yet for 3D images.");
+			error("'Root-ROI' works for 2D but not yet for 3D images.");
 			validRootRoi = false;
 		}
 
@@ -320,7 +321,7 @@ public class Strahler implements PlugIn, DialogListener {
 																		// error
 																		// more
 																		// informative
-			IJ.error("Strahler Analysis Error", "Could not complete analysis!\n" + "Enable verbose mode and check "
+			error("Could not complete analysis!\n" + "Enable verbose mode and check "
 					+ VERBOSE_TABLE + " for details.");
 			return;
 		}
@@ -434,8 +435,21 @@ public class Strahler implements PlugIn, DialogListener {
 		final boolean validImp = imp != null && imp.getBitDepth() == 8;
 		final boolean validSetup = Utils.validSkelDependencies();
 		if (!validImp)
-			IJ.error("Strahler Analysis", "An 8-bit image is required but none was found.");
+			error("An 8-bit image is required but none was found.");
 		return validSetup && validImp;
+	}
+
+	/**
+	 * Displays an error message that will not disrupt macro calls. This is
+	 * useful for batch processing of images: Even if the analysis of a
+	 * particular image fails, remaining images can still be analyzed by the
+	 * same macro
+	 *
+	 * @param errorMsg
+	 *            the error message
+	 */
+	void error(String errorMsg) {
+		Utils.error("Strahler Analysis", errorMsg, srcImp);
 	}
 
 	/**
