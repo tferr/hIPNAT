@@ -21,7 +21,6 @@
  */
 package ipnat.skel;
 
-
 import java.awt.Checkbox;
 import java.awt.Choice;
 import java.awt.Font;
@@ -47,7 +46,6 @@ import ij.plugin.ZProjector;
 import ij.process.ImageProcessor;
 import ij.text.TextWindow;
 import ipnat.ColorMaps;
-import ipnat.Utils;
 import ipnat.processing.Binary;
 import sc.fiji.analyzeSkeleton.AnalyzeSkeleton_;
 import sc.fiji.analyzeSkeleton.Point;
