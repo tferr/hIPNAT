@@ -126,7 +126,7 @@ public class Strahler implements PlugIn, DialogListener {
 	/**
 	 * This method is called when the plugin is loaded.
 	 * 
-	 * @param args
+	 * @param arg
 	 *            the arguments as specified in {@code plugins.config}
 	 *
 	 */
@@ -428,8 +428,8 @@ public class Strahler implements PlugIn, DialogListener {
 	 *
 	 * @param imp
 	 *            the image to be analyzed
-	 * @return {@code true}, if assessment was successful. If {@code false} an
-	 *         error message is displayed.
+	 * @return {@code true}, if assessment was successful. If {@code false} a
+	 *         macro friendly {@link Utils#error(String) error} is displayed.
 	 */
 	boolean validRequirements(final ImagePlus imp) {
 		final boolean validImp = imp != null && imp.getBitDepth() == 8;
@@ -673,10 +673,25 @@ public class Strahler implements PlugIn, DialogListener {
 		IJ.run(imp, "Calibration Bar...", "fill=Black label=White number=" + nLabels + " zoom=" + zoom + " overlay");
 	}
 
+	/**
+	 * Returns the maximum Strahler order being considered by the plugin.
+	 *
+	 * @return The maximum number of pruning cycles of end-point branches that
+	 *         the plugin should perform
+	 * @see #setMaxOrder()
+	 */
 	public int getMaxOrder() {
 		return maxOrder;
 	}
 
+	/**
+	 * Sets the maximum Strahler order to be considered by the plugin.
+	 *
+	 * @param maxOrder
+	 *            The maximum number of pruning cycles of end-point branches
+	 *            that the plugin should perform
+	 *@see #getMaxOrder()
+	 */
 	public void setMaxOrder(int maxOrder) {
 		this.maxOrder = maxOrder;
 	}
