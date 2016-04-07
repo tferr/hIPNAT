@@ -54,6 +54,16 @@ import sc.fiji.analyzeSkeleton.Point;
 import sc.fiji.analyzeSkeleton.SkeletonResult;
 import sc.fiji.skeletonize3D.Skeletonize3D_;
 
+
+/**
+ * This class implements the ImageJ {@code Strahler Analysis} plugin. For more
+ * information, visit the hIPNAT repository
+ * {@literal https://github.com/tferr/hIPNAT} and the the plugin's documentation
+ * page: {@literal http://imagej.net/Strahler_Analysis}
+ *
+ *
+ * @author Tiago Ferreira
+ */
 public class Strahler implements PlugIn, DialogListener {
 
 	/* Default value for max. number of pruning cycles */
@@ -86,7 +96,13 @@ public class Strahler implements PlugIn, DialogListener {
 	/* Version of the program */
 	String VERSION = "1.5.1 2016.01.19";
 
-	/* Grayscale image for intensity-based pruning of skel. loops */
+	/*
+	 * Grayscale image for intensity-based pruning of skel. loops. While it is
+	 * unlikely that the iterative pruning of terminal branches will cause new
+	 * loops on pre-existing skeletons, offering the option to resolve loops
+	 * with intensity based methods remains useful specially when analyzing
+	 * non-thinned grayscale images.
+	 */
 	ImagePlus grayscaleImp = null;
 	int grayscaleImpChoice;
 
@@ -100,12 +116,21 @@ public class Strahler implements PlugIn, DialogListener {
 	/**
 	 * Calls {@link fiji.Debug#run(String, String) fiji.Debug.run()} so that the
 	 * plugin can be debugged from an IDE
+	 *
+	 * @param args
+	 *            the arguments as specified in {@code plugins.config}
 	 */
 	public static void main(final String[] args) {
-		Debug.run("Strahler Analysis...", null); // Label specified in plugins.config
+		Debug.run("Strahler Analysis...", null);
 	}
 
-
+	/**
+	 * This method is called when the plugin is loaded.
+	 * 
+	 * @param args
+	 *            the arguments as specified in {@code plugins.config}
+	 *
+	 */
 	@Override
 	public void run(final String arg) {
 
@@ -398,14 +423,14 @@ public class Strahler implements PlugIn, DialogListener {
 	}
 
 	/**
-	 * Checks if image fulfills analysis requirements and warns the user if
-	 * required dependencies are present (i.e,, if all the required update sites
-	 * have been subscribed).
+	 * Checks if image to be analyzed fulfills analysis requirements and warns
+	 * the user if required dependencies are present (i.e,, if all the required
+	 * update sites have been subscribed).
 	 *
 	 * @param imp
 	 *            the image to be analyzed
-	 * @return {@code true}, if check was successful. If {@code false} an error
-	 *         message is displayed.
+	 * @return {@code true}, if assessment was successful. If {@code false} an
+	 *         error message is displayed.
 	 */
 	boolean validRequirements(final ImagePlus imp) {
 		final boolean validImp = imp != null && imp.getBitDepth() == 8;
@@ -415,12 +440,10 @@ public class Strahler implements PlugIn, DialogListener {
 		return validSetup && validImp;
 	}
 
-	/*
-	 * Creates the dialog prompt, retrieving the image with the original
-	 * structure. While it is unlikely that the iterative pruning of terminal
-	 * branches will cause new loops on pre-existing skeletons, offering the
-	 * option to resolve loops with intensity based methods remains useful
-	 * specially when analyzing non-thinned grayscale images.
+	/**
+	 * Gets the analysis parameters from the user.
+	 *
+	 * @return {@code true} if the dialog input is valid and dialog was not dismissed.
 	 */
 	boolean getSettings() {
 
@@ -439,8 +462,7 @@ public class Strahler implements PlugIn, DialogListener {
 		gd.addMessage("Elimination of Skeleton Loops:", headerFont);
 		gd.addChoice("Method:", AnalyzeSkeleton_.pruneCyclesModes, AnalyzeSkeleton_.pruneCyclesModes[pruneChoice]);
 
-		// 8-bit grayscale is the only image type recognized by
-		// AnalyzeSkeleton_,
+		// 8-bit grayscale is the only image type recognized by AnalyzeSkeleton_,
 		// so we'll provide the user with a pre-filtered list of valid choices
 		final ArrayList<Integer> validIds = new ArrayList<Integer>();
 		final ArrayList<String> validTitles = new ArrayList<String>();
@@ -477,7 +499,12 @@ public class Strahler implements PlugIn, DialogListener {
 
 	}
 
-	/* Retrive dialog options using the DialogListener interface */
+	/*
+	 * Retrieve dialog options using the DialogListener interface
+	 * 
+	 * @see ij.gui.DialogListener#dialogItemChanged(ij.gui.GenericDialog,
+	 * java.awt.AWTEvent)
+	 */
 	@Override
 	public boolean dialogItemChanged(final GenericDialog gd, final java.awt.AWTEvent e) {
 
@@ -506,8 +533,15 @@ public class Strahler implements PlugIn, DialogListener {
 
 	}
 
-	/*
-	 * Returns the table of the specified window title setting common properties
+	/**
+	 * Returns the ResultsTable of the specified window title (if open) or a new
+	 * ResultsTable with appropriated properties (precision, row numbers, etc..)
+	 *
+	 * @param title
+	 *            the window title of the table
+	 * @return a referenced to the opened ResultsTable or a new one if the
+	 *         window of the specified title is not associated to a valid
+	 *         ResultsTable
 	 */
 	ResultsTable getTable(final String title) {
 		ResultsTable rt = null;
@@ -522,7 +556,15 @@ public class Strahler implements PlugIn, DialogListener {
 		return rt;
 	}
 
-	/* Returns the sum of elements of an int[] array */
+	/**
+	 * Returns the sum of the values in the input array, or zero if the array is
+	 * empty or {@code null}.
+	 * 
+	 * @param the
+	 *            array of values to be summed
+	 * @return the sum of elements in the array. Returns zero if array is
+	 *         {@code null} or empty.
+	 */
 	int sum(final int[] array) {
 		int sum = 0;
 		if (array != null)
@@ -531,30 +573,40 @@ public class Strahler implements PlugIn, DialogListener {
 		return sum;
 	}
 
-	/* Returns the sum of elements of a double[] array */
+	/**
+	 * Returns the sum of the values in the input array, or zero if the array is
+	 * empty or {@code null}.
+	 * 
+	 * @param the
+	 *            array of values to be summed
+	 * @return the sum of elements in the array. Returns zero if array is
+	 *         {@code null} or empty.
+	 */
 	double sum(final double[] array) {
-		double sum = 0;
-		if (array != null)
+		double sum = 0; // TODO Use org.apache.commons.math3.stat.StatUtils?
+		if (array != null && array.length > 0)
 			for (final double i : array)
 				sum += i;
 		return sum;
 	}
 
-	/* Returns the average of an int[]/double[] array */
-	double average(final double[] array) {
-		return sum(array) / array.length;
-	}
-
-	/* Returns the average of an int[]/double[] array */
-	double average(final int[] array) {
-		return sum(array) / array.length;
-	}
-
-	/*
-	 * Paints point positions. NB: BeanShell does not seem to suport generics:
-	 * paintPoints(ImageStack stack, ArrayList<Point> points, int value, String
-	 * label) triggers a ParseException
+	/**
+	 * Returns the arithmetic mean of the values in the input array, or
+	 * {@code Double.NaN} if the array is empty or {@code null}.
+	 * 
+	 * @param the
+	 *            array of values to be averaged
+	 * @return the arithmetic mean of the array. Returns {@code Double.NaN} if
+	 *         array is {@code null} or empty.
 	 */
+	double average(final double[] array) {
+		if (array != null && array.length > 0)
+			return sum(array) / array.length; // TODO Use org.apache.commons.math3.stat.StatUtils?
+		else
+			return Double.NaN;
+	}
+
+	/* Paints point positions. */
 	void paintPoints(final ImageStack stack, final ArrayList<Point> points, final int value, final String sliceLabel) {
 		if (points != null) {
 			final ImageProcessor ipp = ip.createProcessor(stack.getWidth(), stack.getHeight());
@@ -590,9 +642,14 @@ public class Strahler implements PlugIn, DialogListener {
 			Binary.removeIsolatedPixels(imp);
 	}
 
-	/*
-	 * Runs ij.plugin.CalibrationBar on the specified image using a suitable
-	 * scale
+	/**
+	 * Runs {@link ij.plugin.CalibrationBar} on the specified image using
+	 * sensible settings.
+	 *
+	 * @param imp
+	 *            the image to processed
+	 * @param nLabels
+	 *            the n. of labels in the calibration bar
 	 */
 	void addCalibrationBar(final ImagePlus imp, final int nLabels) {
 		final ImageCanvas ic = imp.getCanvas();
