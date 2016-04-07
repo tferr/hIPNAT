@@ -29,22 +29,52 @@ import ij.ImagePlus;
 
 public class ColorMaps {
 
+	/**
+	 * Applies the "viridis" colormap to the specified (non-RGB) image
+	 * @param imp
+	 *            A non-RGB image
+	 */
 	public static void applyViridisColorMap(final ImagePlus imp) {
 		applyViridisColorMap(imp, -1);
 	}
 
+	/**
+	 * Applies the "viridis" colormap to the specified (non-RGB) image
+	 *
+	 * @param imp
+	 *            A non-RGB image
+	 * @param backgroundGray
+	 *            The gray value (8-bit scale) to be used as the first entry of
+	 *            the LUT. It is ignored if negative.
+	 */
 	public static void applyViridisColorMap(final ImagePlus imp, final int backgroundGray) {
 		applyLut(imp, viridisColorMap(backgroundGray));
 	}
 
+	/**
+	 * Applies the "magma" colormap to the specified (non-RGB) image
+	 *
+	 * @param imp
+	 *            A non-RGB image
+	 */
 	public static void applyMagmaColorMap(final ImagePlus imp) {
 		applyMagmaColorMap(imp, -1);
 	}
 
+	/**
+	 * Applies the "magma" colormap to the specified (non-RGB) image
+	 *
+	 * @param imp
+	 *            A non-RGB image
+	 * @param backgroundGray
+	 *            The gray value (8-bit scale) to be used as the first entry of
+	 *            the LUT. It is ignored if negative.
+	 */
 	public static void applyMagmaColorMap(final ImagePlus imp, final int backgroundGray) {
 		applyLut(imp, plasmaColorMap(backgroundGray));
 	}
 
+	/** Applies a ColorModel to a non-RGB image */
 	static void applyLut(final ImagePlus imp, final IndexColorModel cm) {
 		if (imp != null && imp.getType() != ImagePlus.COLOR_RGB) {
 			if (imp.isComposite()) {
@@ -56,6 +86,14 @@ public class ColorMaps {
 		}
 	}
 
+	/**
+	 * Returns an IndexColorModel similar to Matplotlib's viridis color map.
+	 *
+	 * @param backgroundGray
+	 *            the positive gray value (8-bit scale) to be used as the first
+	 *            entry of the LUT. It is ignored if negative.
+	 * @return The "viridis" LUT with the specified background entry
+	 */
 	public static IndexColorModel viridisColorMap(final int backgroundGray) {
 
 		final int[] r = { 68, 68, 69, 69, 70, 70, 70, 70, 71, 71, 71, 71, 71, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72,
@@ -112,6 +150,14 @@ public class ColorMaps {
 
 	}
 
+	/**
+	 * Returns an IndexColorModel similar to Matplotlib's "plasma" color map.
+	 *
+	 * @param backgroundGray
+	 *            the positive gray value (8-bit scale) to be used as the first
+	 *            entry of the LUT. It is ignored if negative.
+	 * @return The "plasma" LUT with the specified background entry
+	 */
 	public static IndexColorModel plasmaColorMap(final int backgroundGray) {
 
 		final int[] r = { 12, 16, 19, 21, 24, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 51, 52, 54, 56, 58, 59,
