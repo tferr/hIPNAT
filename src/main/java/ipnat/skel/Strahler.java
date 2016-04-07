@@ -481,7 +481,7 @@ public class Strahler implements PlugIn, DialogListener {
 		gd.addCheckbox("Show detailed information", verbose);
 		gd.addCheckbox("Tabular data only (no image output)", tabular);
 
-		gd.addHelp("http://fiji.sc/Strahler");
+		gd.addHelp("http://imagej.net/Strahler");
 		gd.addDialogListener(this);
 		dialogItemChanged(gd, null);
 		gd.showDialog();
