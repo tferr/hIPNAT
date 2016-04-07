@@ -273,7 +273,7 @@ public class Strahler implements PlugIn, DialogListener {
 			// Report properties of pruned structures
 			if (verbose) {
 				logrt.incrementCounter();
-				logrt.addLabel("Image", title);
+				logrt.addValue("Image", title);
 				logrt.addValue("Structure", "Skel. at iteration " + Integer.toString(order));
 				logrt.addValue("Notes", errorMsg);
 				logrt.addValue("# Trees", sr.getNumOfTrees());
@@ -303,7 +303,7 @@ public class Strahler implements PlugIn, DialogListener {
 			final String msg = (nRootJunctions > 0) ? "Warning: ROI contains ramified root(s)"
 					: "Root-branches inferred from ROI";
 			logrt.incrementCounter();
-			logrt.addLabel("Image", title);
+			logrt.addValue("Image", title);
 			logrt.addValue("Structure", "Root");
 			logrt.addValue("Notes", msg);
 			logrt.addValue("# Trees", rootResult.getNumOfTrees());
@@ -379,7 +379,7 @@ public class Strahler implements PlugIn, DialogListener {
 
 			// Log measurements
 			rt.incrementCounter();
-			rt.addLabel("Image", title);
+			rt.addValue("Image", title);
 			rt.addValue("Strahler Order", i);
 			rt.addValue("# Branches", nBranches);
 			rt.addValue("Ramification ratios", prevNbranches / nBranches);
