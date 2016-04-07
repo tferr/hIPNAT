@@ -14,10 +14,10 @@
 
 <groupId>com.github.tferr</groupId>
 <artifactId>hIPNAT_</artifactId>
-<version>0.0.1-SNAPSHOT</version>
+<version>1.0.0</version>
 
-<name>hipnat_.jar</name>
-<description>(highly capable) Image Processing Tools for Neuroanatomy and Tree-like Morphologies</description>
+<name>hIPNAT</name>
+<description>(highly capable) Image Processing Tools for Neuroanatomy and Tree-like structures</description>
 <url>TBD</url>
 <inceptionYear>2016</inceptionYear>
 
