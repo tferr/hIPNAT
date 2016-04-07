@@ -26,9 +26,15 @@ import java.awt.Choice;
 import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.ListIterator;
 import java.util.Vector;
+
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 
 import fiji.Debug;
 import ij.IJ;
@@ -43,15 +49,18 @@ import ij.measure.Calibration;
 import ij.measure.ResultsTable;
 import ij.plugin.PlugIn;
 import ij.plugin.ZProjector;
+import ij.plugin.frame.Recorder;
 import ij.process.ImageProcessor;
 import ij.text.TextWindow;
 import ipnat.ColorMaps;
+import ipnat.IPNAT;
 import ipnat.Utils;
 import ipnat.processing.Binary;
 import sc.fiji.analyzeSkeleton.AnalyzeSkeleton_;
 import sc.fiji.analyzeSkeleton.Point;
 import sc.fiji.analyzeSkeleton.SkeletonResult;
 import sc.fiji.skeletonize3D.Skeletonize3D_;
+import sholl.gui.EnhancedGenericDialog;
 
 
 /**
@@ -64,6 +73,8 @@ import sc.fiji.skeletonize3D.Skeletonize3D_;
  * @author Tiago Ferreira
  */
 public class Strahler implements PlugIn, DialogListener {
+
+	protected static final String URL = "http://imagej.net/Strahler_Analysis";
 
 	/* Default value for max. number of pruning cycles */
 	int maxOrder = 30;
@@ -459,7 +470,7 @@ public class Strahler implements PlugIn, DialogListener {
 	 */
 	boolean getSettings() {
 
-		final GenericDialog gd = new GenericDialog("Strahler Analysis v" + VERSION);
+		final EnhancedGenericDialog gd = new EnhancedGenericDialog("Strahler Analysis :: " + IPNAT.getReadableVersion());
 		final Font headerFont = new Font("SansSerif", Font.BOLD, 12);
 		gd.setSmartRecording(true);
 
@@ -495,11 +506,41 @@ public class Strahler implements PlugIn, DialogListener {
 		gd.addCheckbox("Show detailed information", verbose);
 		gd.addCheckbox("Tabular data only (no image output)", tabular);
 
-		gd.addHelp("http://imagej.net/Strahler");
 		gd.addDialogListener(this);
-		dialogItemChanged(gd, null);
+		dialogItemChanged(gd, null); //update prompt
+
+		// Add More>> dropdown menu
+		final boolean[] dismissPrompt = { false };
+		final JPopupMenu popup = new JPopupMenu();
+		JMenuItem mi;
+		mi = new JMenuItem("Online documentation");
+		mi.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				IJ.runPlugIn("ij.plugin.BrowserLauncher", URL);
+			}
+		});
+		popup.add(mi);
+		popup.addSeparator();
+		mi = new JMenuItem("About hIPNAT plugins...");
+		mi.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dismissPrompt[0] = true;
+				gd.dispose();
+				IJ.runPlugIn("ipnat.Help", "");
+			}
+		});
+		popup.add(mi);
+		gd.assignPopupToHelpButton(popup);
 		gd.showDialog();
 
+		// Reset Recorder if prompt was dismissed via the popupmenu
+		if (dismissPrompt[0]) {
+			if (Recorder.record)
+				Recorder.setCommand(Recorder.getCommand());
+			return false;
+		}
+
+		// Set grayscale image for intensity-based pruning of skel. loops.
 		if (grayscaleImpChoice == AnalyzeSkeleton_.LOWEST_INTENSITY_VOXEL
 				|| grayscaleImpChoice == AnalyzeSkeleton_.LOWEST_INTENSITY_BRANCH) {
 			grayscaleImp = WindowManager.getImage(validIds.get(grayscaleImpChoice));
