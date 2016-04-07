@@ -154,8 +154,15 @@ public class Strahler implements PlugIn, DialogListener {
 		// 1) Check if ROI is associated with all slices or just one
 		// 2) Ignore counts above/below the ROI, as needed
 		// 3) Extend ip operations to stack
-		if (validRootRoi && srcImp.getNSlices() > 1) {
-			error("'Root-ROI' works for 2D but not yet for 3D images.");
+		if (srcImp.getNSlices() > 1) {
+			final String warning = "3D images are currently supported with the following limitations:\n"
+					+ "    - 'Root-protecting' ROIs are not yet supported\n"
+					+ "    - Provided lengths are estimated from Z-projections\n \n"
+					+ "These issues will be addressed in future releases.";
+			if (IJ.macroRunning())
+				IJ.log(warning);
+			else
+				IJ.showMessage("Warning", warning);
 			validRootRoi = false;
 		}
 
