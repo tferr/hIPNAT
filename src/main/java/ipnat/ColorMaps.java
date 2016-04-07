@@ -35,7 +35,7 @@ public class ColorMaps {
 	 *            A non-RGB image
 	 */
 	public static void applyViridisColorMap(final ImagePlus imp) {
-		applyViridisColorMap(imp, -1);
+		applyViridisColorMap(imp, -1, false);
 	}
 
 	/**
@@ -47,8 +47,8 @@ public class ColorMaps {
 	 *            The gray value (8-bit scale) to be used as the first entry of
 	 *            the LUT. It is ignored if negative.
 	 */
-	public static void applyViridisColorMap(final ImagePlus imp, final int backgroundGray) {
-		applyLut(imp, viridisColorMap(backgroundGray));
+	public static void applyViridisColorMap(final ImagePlus imp, final int backgroundGray, final boolean inverted) {
+		applyLut(imp, viridisColorMap(backgroundGray, inverted));
 	}
 
 	/**
@@ -58,7 +58,7 @@ public class ColorMaps {
 	 *            A non-RGB image
 	 */
 	public static void applyMagmaColorMap(final ImagePlus imp) {
-		applyMagmaColorMap(imp, -1);
+		applyMagmaColorMap(imp, -1, false);
 	}
 
 	/**
@@ -70,8 +70,8 @@ public class ColorMaps {
 	 *            The gray value (8-bit scale) to be used as the first entry of
 	 *            the LUT. It is ignored if negative.
 	 */
-	public static void applyMagmaColorMap(final ImagePlus imp, final int backgroundGray) {
-		applyLut(imp, plasmaColorMap(backgroundGray));
+	public static void applyMagmaColorMap(final ImagePlus imp, final int backgroundGray, final boolean inverted) {
+		applyLut(imp, plasmaColorMap(backgroundGray, inverted));
 	}
 
 	/** Applies a ColorModel to a non-RGB image */
@@ -94,7 +94,7 @@ public class ColorMaps {
 	 *            entry of the LUT. It is ignored if negative.
 	 * @return The "viridis" LUT with the specified background entry
 	 */
-	public static IndexColorModel viridisColorMap(final int backgroundGray) {
+	public static IndexColorModel viridisColorMap(final int backgroundGray, final boolean inverted) {
 
 		final int[] r = { 68, 68, 69, 69, 70, 70, 70, 70, 71, 71, 71, 71, 71, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72,
 				72, 72, 72, 72, 72, 72, 72, 71, 71, 71, 71, 71, 70, 70, 70, 70, 69, 69, 69, 68, 68, 68, 67, 67, 66, 66,
@@ -136,10 +136,11 @@ public class ColorMaps {
 		final byte[] reds = new byte[256];
 		final byte[] greens = new byte[256];
 		final byte[] blues = new byte[256];
-		for (int i = 0; i < r.length; i++) {
-			reds[i] = (byte) r[i];
-			greens[i] = (byte) g[i];
-			blues[i] = (byte) b[i];
+		for (int i = 0; i < 256; i++) {
+			final int idx = (inverted) ? 255 - i : i;
+			reds[idx] = (byte) r[i];
+			greens[idx] = (byte) g[i];
+			blues[idx] = (byte) b[i];
 		}
 
 		// Set background color
@@ -158,7 +159,7 @@ public class ColorMaps {
 	 *            entry of the LUT. It is ignored if negative.
 	 * @return The "plasma" LUT with the specified background entry
 	 */
-	public static IndexColorModel plasmaColorMap(final int backgroundGray) {
+	public static IndexColorModel plasmaColorMap(final int backgroundGray, final boolean inverted) {
 
 		final int[] r = { 12, 16, 19, 21, 24, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 51, 52, 54, 56, 58, 59,
 				61, 63, 64, 66, 68, 69, 71, 73, 74, 76, 78, 79, 81, 82, 84, 86, 87, 89, 90, 92, 94, 95, 97, 98, 100,
@@ -200,10 +201,12 @@ public class ColorMaps {
 		final byte[] reds = new byte[256];
 		final byte[] greens = new byte[256];
 		final byte[] blues = new byte[256];
-		for (int i = 0; i < r.length; i++) {
-			reds[i] = (byte) r[i];
-			greens[i] = (byte) g[i];
-			blues[i] = (byte) b[i];
+
+		for (int i = 0; i < 256; i++) {
+			final int idx = (inverted) ? 255 - i : i;
+			reds[idx] = (byte) r[i];
+			greens[idx] = (byte) g[i];
+			blues[idx] = (byte) b[i];
 		}
 
 		// Set background color
