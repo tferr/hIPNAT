@@ -30,10 +30,8 @@ public class IPNAT {
 	public static final String BUILD = "01";
 	public static final String EXTENDED_NAME = "Image Processing for NeuroAnatomy and Tree-like structures";
 	public static final String ABBREV_NAME = "hIPNAT";
-	public static final String MENU_NAME = "Neurons & Dendriforms";
 	public static final String DOC_URL = "http://imagej.net/hIPNAT";
 	public static final String SRC_URL = "https://github.com/tferr/hIPNAT";
-	public static final String API_URL = "http://tferr.github.io/hIPNAT/apidocs/";
 
 	public static String getReadableVersion() {
 		String s = ABBREV_NAME + " v" + VERSION;
