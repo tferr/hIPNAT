@@ -432,7 +432,7 @@ public class Strahler implements PlugIn, DialogListener {
 	 */
 	boolean validRequirements(final ImagePlus imp) {
 		final boolean validImp = imp != null && imp.getBitDepth() == 8;
-		final boolean validSetup = new ipnat.Utils().validSkelDependencies();
+		final boolean validSetup = Utils.validSkelDependencies();
 		if (!validImp)
 			IJ.error("Strahler Analysis", "An 8-bit image is required but none was found.");
 		return validSetup && validImp;

@@ -31,12 +31,15 @@ import ij.Menus;
 
 public class Utils {
 
-	public boolean validSkelDependencies() {
+	/** Private constructor to prevent class instantiation. */
+	private Utils() {
+	}
+	public static boolean validSkelDependencies() {
 		return classExists(
 				Arrays.asList("sc.fiji.analyzeSkeleton.AnalyzeSkeleton_", "sc.fiji.skeletonize3D.Skeletonize3D_"));
 	}
 
-	public boolean classExists(final List<String> classStringNames) {
+	public static boolean classExists(final List<String> classStringNames) {
 		if (classStringNames != null) {
 			for (final String cls : classStringNames) {
 				try {
