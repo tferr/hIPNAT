@@ -28,6 +28,7 @@ import java.io.PrintWriter;
 import ij.IJ;
 import ij.text.TextWindow;
 
+/** hIPNAT's ExceptionHandler */
 public class ExceptionHandler implements IJ.ExceptionHandler {
 
 	String CLASS_NOT_FOUND = "A Java file was not found";

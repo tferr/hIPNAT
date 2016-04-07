@@ -28,7 +28,6 @@ import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.ListIterator;
 import java.util.Vector;
@@ -61,7 +60,6 @@ import sc.fiji.analyzeSkeleton.Point;
 import sc.fiji.analyzeSkeleton.SkeletonResult;
 import sc.fiji.skeletonize3D.Skeletonize3D_;
 import sholl.gui.EnhancedGenericDialog;
-
 
 /**
  * This class implements the ImageJ {@code Strahler Analysis} plugin. For more
@@ -113,12 +111,11 @@ public class Strahler implements PlugIn, DialogListener {
 	ImagePlus grayscaleImp = null;
 	int grayscaleImpChoice;
 
-	ImagePlus srcImp;		// Image to be analyzed (we'll be working on a copy)
-	boolean validRootRoi;	// Flag assessing validity of 'root-protective' ROI
-	String title;			// Title of active image
-	Roi rootRoi;			// Reference to the "root-protecting" ROI
+	ImagePlus srcImp; // Image to be analyzed (we'll be working on a copy)
+	boolean validRootRoi; // Flag assessing validity of 'root-protective' ROI
+	String title; // Title of active image
+	Roi rootRoi; // Reference to the "root-protecting" ROI
 	ImageProcessor ip;
-
 
 	/**
 	 * Calls {@link fiji.Debug#run(String, String) fiji.Debug.run()} so that the
@@ -133,7 +130,7 @@ public class Strahler implements PlugIn, DialogListener {
 
 	/**
 	 * This method is called when the plugin is loaded.
-	 * 
+	 *
 	 * @param arg
 	 *            the arguments as specified in {@code plugins.config}
 	 *
@@ -367,7 +364,8 @@ public class Strahler implements PlugIn, DialogListener {
 		for (int i = 1; i <= order; i++) {
 
 			// Segment branches by order
-			final ImagePlus maskImp = imp3.duplicate(); // Calibration is retained
+			final ImagePlus maskImp = imp3.duplicate(); // Calibration is
+														// retained
 			IJ.setThreshold(maskImp, i, i);
 			IJ.run(maskImp, "Convert to Mask", "");
 
@@ -457,18 +455,20 @@ public class Strahler implements PlugIn, DialogListener {
 	 * @param errorMsg
 	 *            the error message
 	 */
-	void error(String errorMsg) {
+	void error(final String errorMsg) {
 		Utils.error("Strahler Analysis", errorMsg, srcImp);
 	}
 
 	/**
 	 * Gets the analysis parameters from the user.
 	 *
-	 * @return {@code true} if the dialog input is valid and dialog was not dismissed.
+	 * @return {@code true} if the dialog input is valid and dialog was not
+	 *         dismissed.
 	 */
 	boolean getSettings() {
 
-		final EnhancedGenericDialog gd = new EnhancedGenericDialog("Strahler Analysis :: " + IPNAT.getReadableVersion());
+		final EnhancedGenericDialog gd = new EnhancedGenericDialog(
+				"Strahler Analysis :: " + IPNAT.getReadableVersion());
 		final Font headerFont = new Font("SansSerif", Font.BOLD, 12);
 		gd.setSmartRecording(true);
 
@@ -483,7 +483,8 @@ public class Strahler implements PlugIn, DialogListener {
 		gd.addMessage("Elimination of Skeleton Loops:", headerFont);
 		gd.addChoice("Method:", AnalyzeSkeleton_.pruneCyclesModes, AnalyzeSkeleton_.pruneCyclesModes[pruneChoice]);
 
-		// 8-bit grayscale is the only image type recognized by AnalyzeSkeleton_,
+		// 8-bit grayscale is the only image type recognized by
+		// AnalyzeSkeleton_,
 		// so we'll provide the user with a pre-filtered list of valid choices
 		final ArrayList<Integer> validIds = new ArrayList<Integer>();
 		final ArrayList<String> validTitles = new ArrayList<String>();
@@ -505,7 +506,7 @@ public class Strahler implements PlugIn, DialogListener {
 		gd.addCheckbox("Tabular data only (no image output)", tabular);
 
 		gd.addDialogListener(this);
-		dialogItemChanged(gd, null); //update prompt
+		dialogItemChanged(gd, null); // update prompt
 
 		// Add More>> dropdown menu
 		final boolean[] dismissPrompt = { false };
@@ -513,7 +514,8 @@ public class Strahler implements PlugIn, DialogListener {
 		JMenuItem mi;
 		mi = new JMenuItem("Online documentation");
 		mi.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			@Override
+			public void actionPerformed(final ActionEvent e) {
 				IJ.runPlugIn("ij.plugin.BrowserLauncher", URL);
 			}
 		});
@@ -521,7 +523,8 @@ public class Strahler implements PlugIn, DialogListener {
 		popup.addSeparator();
 		mi = new JMenuItem("About hIPNAT plugins...");
 		mi.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			@Override
+			public void actionPerformed(final ActionEvent e) {
 				dismissPrompt[0] = true;
 				gd.dispose();
 				IJ.runPlugIn("ipnat.Help", "");
@@ -529,6 +532,7 @@ public class Strahler implements PlugIn, DialogListener {
 		});
 		popup.add(mi);
 		gd.assignPopupToHelpButton(popup);
+
 		gd.showDialog();
 
 		// Reset Recorder if prompt was dismissed via the popupmenu
@@ -552,7 +556,7 @@ public class Strahler implements PlugIn, DialogListener {
 
 	/*
 	 * Retrieve dialog options using the DialogListener interface
-	 * 
+	 *
 	 * @see ij.gui.DialogListener#dialogItemChanged(ij.gui.GenericDialog,
 	 * java.awt.AWTEvent)
 	 */
@@ -611,7 +615,7 @@ public class Strahler implements PlugIn, DialogListener {
 	/**
 	 * Returns the sum of the values in the input array, or zero if the array is
 	 * empty or {@code null}.
-	 * 
+	 *
 	 * @param the
 	 *            array of values to be summed
 	 * @return the sum of elements in the array. Returns zero if array is
@@ -628,7 +632,7 @@ public class Strahler implements PlugIn, DialogListener {
 	/**
 	 * Returns the sum of the values in the input array, or zero if the array is
 	 * empty or {@code null}.
-	 * 
+	 *
 	 * @param the
 	 *            array of values to be summed
 	 * @return the sum of elements in the array. Returns zero if array is
@@ -645,7 +649,7 @@ public class Strahler implements PlugIn, DialogListener {
 	/**
 	 * Returns the arithmetic mean of the values in the input array, or
 	 * {@code Double.NaN} if the array is empty or {@code null}.
-	 * 
+	 *
 	 * @param the
 	 *            array of values to be averaged
 	 * @return the arithmetic mean of the array. Returns {@code Double.NaN} if
@@ -653,7 +657,8 @@ public class Strahler implements PlugIn, DialogListener {
 	 */
 	double average(final double[] array) {
 		if (array != null && array.length > 0)
-			return sum(array) / array.length; // TODO Use org.apache.commons.math3.stat.StatUtils?
+			return sum(array) / array.length; // TODO Use
+												// org.apache.commons.math3.stat.StatUtils?
 		else
 			return Double.NaN;
 	}
@@ -729,9 +734,9 @@ public class Strahler implements PlugIn, DialogListener {
 	 * @param maxOrder
 	 *            The maximum number of pruning cycles of end-point branches
 	 *            that the plugin should perform
-	 *@see #getMaxOrder()
+	 * @see #getMaxOrder()
 	 */
-	public void setMaxOrder(int maxOrder) {
+	public void setMaxOrder(final int maxOrder) {
 		this.maxOrder = maxOrder;
 	}
 

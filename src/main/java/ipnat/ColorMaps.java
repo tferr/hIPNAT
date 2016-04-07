@@ -27,6 +27,7 @@ import java.awt.image.IndexColorModel;
 import ij.CompositeImage;
 import ij.ImagePlus;
 
+/** Utilities for colormaps and IJ lookup tables */
 public class ColorMaps {
 
 	/**
