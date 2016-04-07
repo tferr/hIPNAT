@@ -361,7 +361,7 @@ public class Strahler implements PlugIn, DialogListener {
 
 			// Segment branches by order
 			final ImagePlus maskImp = imp3.duplicate(); // Calibration is retained
-			maskImp.getProcessor().setThreshold(i, i, ImageProcessor.NO_LUT_UPDATE);
+			IJ.setThreshold(maskImp, i, i);
 			IJ.run(maskImp, "Convert to Mask", "");
 
 			// Analyze segmented order
