@@ -111,7 +111,7 @@ public class Utils {
 		return true;
 	}
 
-	public boolean classExists(final String classStringName) {
+	public static boolean classExists(final String classStringName) {
 		return classExists(Collections.singletonList(classStringName));
 	}
 

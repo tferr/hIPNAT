@@ -21,7 +21,6 @@
  */
 package ipnat.skel;
 
-import java.util.Arrays;
 import java.util.stream.IntStream;
 
 import org.apache.commons.math3.stat.StatUtils;
@@ -55,7 +54,7 @@ public class SummarizeSkeleton implements PlugInFilter {
 			IJ.error("\"Summarize Skeleton\" requires Java 1.8 or later.");
 			return DONE;
 		} else if (!Utils.validSkelDependencies()
-				&& !Utils.classExists(Arrays.asList("org.apache.commons.math3.stat.StatUtils"))) {
+				&& !Utils.classExists("org.apache.commons.math3.stat.StatUtils")) {
 			return DONE;
 		} else
 			return DOES_8G | NO_CHANGES;
