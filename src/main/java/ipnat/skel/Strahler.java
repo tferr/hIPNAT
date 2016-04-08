@@ -25,7 +25,6 @@ import java.awt.Checkbox;
 import java.awt.Choice;
 import java.awt.Font;
 import java.awt.Rectangle;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -50,7 +49,6 @@ import ij.plugin.PlugIn;
 import ij.plugin.ZProjector;
 import ij.plugin.frame.Recorder;
 import ij.process.ImageProcessor;
-import ij.text.TextWindow;
 import ipnat.ColorMaps;
 import ipnat.IPNAT;
 import ipnat.Utils;
@@ -177,8 +175,8 @@ public class Strahler implements PlugIn, DialogListener {
 		skeletonizeWithoutHermits(imp);
 
 		// Initialize ResultsTable: main and detailed info
-		final ResultsTable rt = getTable(STRAHLER_TABLE);
-		final ResultsTable logrt = getTable(VERBOSE_TABLE);
+		final ResultsTable rt = Utils.getTable(STRAHLER_TABLE);
+		final ResultsTable logrt = Utils.getTable(VERBOSE_TABLE);
 
 		// Analyze root
 		ImagePlus rootImp;
@@ -587,29 +585,6 @@ public class Strahler implements PlugIn, DialogListener {
 
 		return !gd.wasCanceled();
 
-	}
-
-	/**
-	 * Returns the ResultsTable of the specified window title (if open) or a new
-	 * ResultsTable with appropriated properties (precision, row numbers, etc..)
-	 *
-	 * @param title
-	 *            the window title of the table
-	 * @return a referenced to the opened ResultsTable or a new one if the
-	 *         window of the specified title is not associated to a valid
-	 *         ResultsTable
-	 */
-	ResultsTable getTable(final String title) {
-		ResultsTable rt = null;
-		final Window window = WindowManager.getWindow(title);
-		if (window != null)
-			rt = ((TextWindow) window).getTextPanel().getResultsTable();
-		if (rt == null)
-			rt = new ResultsTable();
-		rt.setPrecision(5);
-		rt.setNaNEmptyCells(true);
-		rt.showRowNumbers(false);
-		return rt;
 	}
 
 	/**

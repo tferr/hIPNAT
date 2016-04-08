@@ -22,6 +22,7 @@
 package ipnat;
 
 
+import java.awt.Window;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -30,11 +31,38 @@ import java.util.List;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.Menus;
+import ij.WindowManager;
+import ij.measure.ResultsTable;
+import ij.text.TextWindow;
 
 public class Utils {
 
 	/** Private constructor to prevent class instantiation. */
 	private Utils() {
+	}
+
+	/**
+	 * Returns the ResultsTable of the specified window title (if open) or a new
+	 * ResultsTable with appropriated properties (precision of 5 decimal places,
+	 * no row numbers, "NaN" padding of empty cells)
+	 *
+	 * @param title
+	 *            the window title of the table
+	 * @return a referenced to the opened ResultsTable or a new one if the
+	 *         window of the specified title is not associated to a valid
+	 *         ResultsTable
+	 */
+	public static ResultsTable getTable(final String title) {
+		ResultsTable rt = null;
+		final Window window = WindowManager.getWindow(title);
+		if (window != null)
+			rt = ((TextWindow) window).getTextPanel().getResultsTable();
+		if (rt == null)
+			rt = new ResultsTable();
+		rt.setPrecision(5);
+		rt.setNaNEmptyCells(true);
+		rt.showRowNumbers(false);
+		return rt;
 	}
 
 	/**
