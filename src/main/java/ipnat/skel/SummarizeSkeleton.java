@@ -101,10 +101,11 @@ public class SummarizeSkeleton implements PlugInFilter {
 			rt.addValue("# End-points", IntStream.of(sr.getEndPoints()).sum());
 			rt.addValue("# Triple Points", IntStream.of(sr.getTriples()).sum());
 			rt.addValue("# Quadruple Points", IntStream.of(sr.getQuadruples()).sum());
+			rt.addValue("Sum of voxels", IntStream.of(sr.calculateNumberOfVoxels()).sum());
 
 		} catch (final Exception ignored1) {
 
-			Utils.error("Summarize Skeleton", "Some metrics could not be calculated", imp);
+			Utils.error("Summarize Skeleton", "Some statistics could not be calculated", imp);
 
 		} finally {
 
