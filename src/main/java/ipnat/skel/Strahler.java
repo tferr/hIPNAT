@@ -47,7 +47,6 @@ import ij.measure.Calibration;
 import ij.measure.ResultsTable;
 import ij.plugin.PlugIn;
 import ij.plugin.ZProjector;
-import ij.plugin.frame.Recorder;
 import ij.process.ImageProcessor;
 import ipnat.ColorMaps;
 import ipnat.IPNAT;
@@ -507,7 +506,6 @@ public class Strahler implements PlugIn, DialogListener {
 		dialogItemChanged(gd, null); // update prompt
 
 		// Add More>> dropdown menu
-		final boolean[] dismissPrompt = { false };
 		final JPopupMenu popup = new JPopupMenu();
 		JMenuItem mi;
 		mi = new JMenuItem("Online documentation");
@@ -523,8 +521,6 @@ public class Strahler implements PlugIn, DialogListener {
 		mi.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(final ActionEvent e) {
-				dismissPrompt[0] = true;
-				gd.dispose();
 				IJ.runPlugIn("ipnat.Help", "");
 			}
 		});
@@ -532,13 +528,6 @@ public class Strahler implements PlugIn, DialogListener {
 		gd.assignPopupToHelpButton(popup);
 
 		gd.showDialog();
-
-		// Reset Recorder if prompt was dismissed via the popupmenu
-		if (dismissPrompt[0]) {
-			if (Recorder.record)
-				Recorder.setCommand(Recorder.getCommand());
-			return false;
-		}
 
 		// Set grayscale image for intensity-based pruning of skel. loops.
 		if (grayscaleImpChoice == AnalyzeSkeleton_.LOWEST_INTENSITY_VOXEL
@@ -548,7 +537,7 @@ public class Strahler implements PlugIn, DialogListener {
 			grayscaleImp = null;
 		}
 
-		return dialogItemChanged(gd, null);
+		return gd.wasOKed();
 
 	}
 
