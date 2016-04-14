@@ -38,9 +38,11 @@ import ij.ImagePlus;
 import ij.Prefs;
 import ij.gui.DialogListener;
 import ij.gui.GenericDialog;
+import ij.gui.YesNoCancelDialog;
 import ij.io.OpenDialog;
 import ij.measure.Calibration;
 import ij.plugin.PlugIn;
+import ij.plugin.frame.Recorder;
 import ij.util.Tools;
 import sholl.gui.EnhancedGenericDialog;
 import tracing.Path;
@@ -70,6 +72,8 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 	private boolean applyOffset, applyScale, ignoreCalibration;
 	private double voxelWidth, voxelHeight, voxelDepth;
 	private String voxelUnit;
+	private File chosenFile;
+	private boolean guessOffsets = true;
 
 	/**
 	 * Calls {@link fiji.Debug#runPlugIn(String, String, boolean)
@@ -86,12 +90,15 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 	@Override
 	public void run(final String arg) {
 
-		final OpenDialog od = new OpenDialog("Select .swc file...", null, null);
-		final String directory = od.getDirectory();
-		final String fileName = od.getFileName();
-		if (fileName == null) // User pressed "Cancel"
-			return;
-		final File chosenFile = new File(directory, fileName);
+		if (chosenFile==null) {
+			final OpenDialog od = new OpenDialog("Open .swc file...", null, null);
+			final String directory = od.getDirectory();
+			final String fileName = od.getFileName();
+			if (fileName == null) // User pressed "Cancel"
+				return;
+			chosenFile = new File(directory, fileName);
+		}
+
 		if (!chosenFile.exists()) {
 			IJ.error("The file '" + chosenFile.getAbsolutePath() + "' is not available");
 			return;
@@ -123,15 +130,25 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 		}
 
 		// Calculate smallest dimensions of stack holding the rendering of paths
+		// and suggest users with suitable offsets in case input was not suitable
 		int cropped_canvas_x = 1;
 		int cropped_canvas_y = 1;
 		int cropped_canvas_z = 1;
+		int x_guessed_offset = 0;
+		int y_guessed_offset = 0;
+		int z_guessed_offset = 0;
 		for (int i = 0; i < pathAndFillManager.size(); ++i) {
 			final Path p = pathAndFillManager.getPath(i);
 			for (int j = 0; j < p.size(); ++j) {
 				cropped_canvas_x = Math.max(cropped_canvas_x, p.getXUnscaled(j));
 				cropped_canvas_y = Math.max(cropped_canvas_y, p.getYUnscaled(j));
 				cropped_canvas_z = Math.max(cropped_canvas_z, p.getZUnscaled(j));
+				if (guessOffsets) {
+					x_guessed_offset = Math.min(x_guessed_offset, p.getXUnscaled(j));
+					y_guessed_offset = Math.min(y_guessed_offset, p.getYUnscaled(j));
+					z_guessed_offset = Math.min(z_guessed_offset, p.getZUnscaled(j));
+				}
+
 			}
 		}
 		width = cropped_canvas_x + 10;
@@ -153,13 +170,29 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 				// tracing.SimpleNeuriteTracer.makePathVolume() will adopt
 				// stacks.ThreePanes.xy's calibration
 				final ImagePlus imp = makePathVolume();
-				imp.setTitle(fileName);
+				imp.setTitle(chosenFile.getName());
 				imp.show();
 			}
 		} catch (final Exception e) {
 			if (IJ.debugMode)
 				IPNAT.handleException(e);
-			IJ.error("Unable to render swc file");
+			if (guessOffsets && chosenFile!=null 
+					&& new YesNoCancelDialog(IJ.getInstance(),
+							"Unable to render " + chosenFile.getName(),
+							"Re-try with guessed (presumably more suitable) settings?").yesPressed()) {
+				applyScale = false;
+				applyOffset = true;
+				xOffset = x_guessed_offset * -1.05;
+				yOffset = y_guessed_offset * -1.05;
+				zOffset = z_guessed_offset * -1.05;
+				saveDialogSettings();
+				if (Recorder.record) {
+					Recorder.setCommand(Recorder.getCommand());
+					Recorder.recordPath("open", chosenFile.getAbsolutePath());
+				}
+				run("");
+			}
+
 		}
 
 	}
