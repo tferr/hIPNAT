@@ -182,9 +182,9 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 							"Re-try with guessed (presumably more suitable) settings?").yesPressed()) {
 				applyScale = false;
 				applyOffset = true;
-				xOffset = x_guessed_offset * -1.05;
-				yOffset = y_guessed_offset * -1.05;
-				zOffset = z_guessed_offset * -1.05;
+				xOffset = (x_guessed_offset==0d) ? 0d : x_guessed_offset * -1.05;
+				yOffset = (y_guessed_offset==0d) ? 0d : y_guessed_offset * -1.05;
+				zOffset = (z_guessed_offset==0d) ? 0d : z_guessed_offset * -1.05;
 				saveDialogSettings();
 				if (Recorder.record) {
 					Recorder.setCommand(Recorder.getCommand());
