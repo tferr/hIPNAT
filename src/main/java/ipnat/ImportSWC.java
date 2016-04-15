@@ -151,9 +151,11 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 
 			}
 		}
+		// Padding" is essential to accommodate for "rounding"
+		// errors in PathAndFillManager.setPathPointsInVolume()
 		width = cropped_canvas_x + 10;
 		height = cropped_canvas_y + 10;
-		depth = cropped_canvas_z + 2;
+		depth = (cropped_canvas_z==1) ? 1 : cropped_canvas_z + 2;
 
 		// Define spatial calibration of stack. We must initialize
 		// stacks.ThreePanes.xy to avoid a NPE later on
