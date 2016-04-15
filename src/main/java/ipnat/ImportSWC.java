@@ -27,10 +27,13 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+
+import org.scijava.vecmath.Point3f;
 
 import ij.IJ;
 import ij.ImageJ;
@@ -38,6 +41,7 @@ import ij.ImagePlus;
 import ij.Prefs;
 import ij.gui.DialogListener;
 import ij.gui.GenericDialog;
+import ij.gui.PointRoi;
 import ij.gui.YesNoCancelDialog;
 import ij.io.OpenDialog;
 import ij.measure.Calibration;
@@ -74,6 +78,10 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 	private String voxelUnit;
 	private File chosenFile;
 	private boolean guessOffsets = true;
+	private boolean ignoreSWCAxon = true;
+	private boolean ignoreSWCDendrite = false;
+	private boolean markSoma = true;
+	private PointRoi somaROI = null;
 
 	/**
 	 * Calls {@link fiji.Debug#runPlugIn(String, String, boolean)
@@ -137,8 +145,31 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 		int x_guessed_offset = 0;
 		int y_guessed_offset = 0;
 		int z_guessed_offset = 0;
+
 		for (int i = 0; i < pathAndFillManager.size(); ++i) {
+
 			final Path p = pathAndFillManager.getPath(i);
+			final int type = p.getSWCType();
+
+			if (ignoreSWCAxon && type == Path.SWC_AXON)
+				continue;
+			if (ignoreSWCDendrite && (type == Path.SWC_APICAL_DENDRITE || type == Path.SWC_DENDRITE))
+				continue;
+			if (markSoma && type == Path.SWC_SOMA) {
+				List<Point3f> somaPoints = p.getPoint3fList();
+				float sx = 0f, sy = 0f, sz = 0f;
+				for (Point3f sp : somaPoints) {
+					sx += sp.x;
+					sy += sp.y;
+					sz += sp.z;
+				}
+				sx /= somaPoints.size();
+				sy /= somaPoints.size();
+				sz /= somaPoints.size();
+				somaROI = new PointRoi(sx, sy);
+				somaROI.setPosition((int) sz);
+			}
+
 			for (int j = 0; j < p.size(); ++j) {
 				cropped_canvas_x = Math.max(cropped_canvas_x, p.getXUnscaled(j));
 				cropped_canvas_y = Math.max(cropped_canvas_y, p.getYUnscaled(j));
@@ -174,6 +205,8 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 				final ImagePlus imp = makePathVolume();
 				imp.setTitle(chosenFile.getName());
 				imp.show();
+				if (markSoma && somaROI != null)
+					imp.setRoi(somaROI);
 			}
 		} catch (final Exception e) {
 			if (IJ.debugMode)
@@ -182,6 +215,8 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 					&& new YesNoCancelDialog(IJ.getInstance(),
 							"Unable to render " + chosenFile.getName(),
 							"Re-try with guessed (presumably more suitable) settings?").yesPressed()) {
+				ignoreSWCAxon = false;
+				ignoreSWCDendrite = false;
 				applyScale = false;
 				applyOffset = true;
 				xOffset = (x_guessed_offset==0d) ? 0d : x_guessed_offset * -1.05;
