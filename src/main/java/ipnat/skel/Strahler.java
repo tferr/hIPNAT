@@ -530,8 +530,8 @@ public class Strahler implements PlugIn, DialogListener {
 		gd.showDialog();
 
 		// Set grayscale image for intensity-based pruning of skel. loops.
-		if (grayscaleImpChoice == AnalyzeSkeleton_.LOWEST_INTENSITY_VOXEL
-				|| grayscaleImpChoice == AnalyzeSkeleton_.LOWEST_INTENSITY_BRANCH) {
+		if (pruneChoice == AnalyzeSkeleton_.LOWEST_INTENSITY_VOXEL
+				|| pruneChoice == AnalyzeSkeleton_.LOWEST_INTENSITY_BRANCH) {
 			grayscaleImp = WindowManager.getImage(validIds.get(grayscaleImpChoice));
 		} else {
 			grayscaleImp = null;
