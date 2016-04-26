@@ -23,6 +23,7 @@ package ipnat;
 
 import java.awt.AWTEvent;
 import java.awt.Checkbox;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,6 +38,7 @@ import ij.ImageJ;
 import ij.ImagePlus;
 import ij.Prefs;
 import ij.gui.DialogListener;
+import ij.gui.GUI;
 import ij.gui.GenericDialog;
 import ij.gui.YesNoCancelDialog;
 import ij.io.OpenDialog;
@@ -44,6 +46,7 @@ import ij.measure.Calibration;
 import ij.plugin.PlugIn;
 import ij.plugin.frame.Recorder;
 import ij.util.Tools;
+import ij3d.Image3DUniverse;
 import sholl.gui.EnhancedGenericDialog;
 import tracing.Path;
 import tracing.PathAndFillManager;
@@ -63,8 +66,9 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 
 	private final String PREFS_KEY = "tracing.SWCImportOptionsDialog.";
 	private EnhancedGenericDialog settingsDialog;
-	private final String[] RENDING_OPTIONS = new String[] { "Untagged skeleton" };
+	private final String[] RENDING_OPTIONS = new String[] { "Untagged skeleton" , "3D viewer"};
 	private final int UNTAGGED_SKEL = 0;
+	private final int GRAY_3DVIEWER = 1;
 	private int rendingChoice;
 
 	private double xOffset, yOffset, zOffset;
@@ -168,13 +172,32 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 		xy.setCalibration(cal);
 
 		try {
-			if (rendingChoice == UNTAGGED_SKEL) {
+
+			switch (rendingChoice) {
+			case UNTAGGED_SKEL:
 				// tracing.SimpleNeuriteTracer.makePathVolume() will adopt
 				// stacks.ThreePanes.xy's calibration
 				final ImagePlus imp = makePathVolume();
 				imp.setTitle(chosenFile.getName());
 				imp.show();
+				break;
+			case GRAY_3DVIEWER:
+				univ = get3DUniverse();
+				if (univ == null) {
+					univ = new Image3DUniverse(width, height);
+				}
+				for (int i = 0; i < pathAndFillManager.size(); ++i) {
+					final Path p = pathAndFillManager.getPath(i);
+					p.addTo3DViewer(univ, Color.WHITE, colorImage);
+				}
+				GUI.center(univ.getWindow());
+				univ.show();
+				break;
+			default:
+				IJ.log("Bug: Unknown option...");
+				return;
 			}
+
 		} catch (final Exception e) {
 			if (IJ.debugMode)
 				IPNAT.handleException(e);
