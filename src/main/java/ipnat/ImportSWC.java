@@ -59,7 +59,7 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 	final double DEFAULT_OFFSET = 0d;
 	final double DEFAULT_SCALE = 1d;
 	final float DEFAULT_SPACING = 1f;
-	final String DEF_VOXEL_UNIT = "unknown";
+	final String DEF_VOXEL_UNIT = "\u00B5m";
 	final double DEF_VOXEL_WIDTH = 1d;
 	final double DEF_VOXEL_HEIGHT = 1d;
 	final double DEF_VOXEL_DEPTH = 1d;
