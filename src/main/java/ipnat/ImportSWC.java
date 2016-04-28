@@ -130,7 +130,7 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 				applyScale ? yScale : DEFAULT_SCALE,
 				applyScale ? zScale : DEFAULT_SCALE,
 				true);
-		if (!successfullImport || pathAndFillManager == null || pathAndFillManager.size() == 0) {
+		if (!successfullImport || pathAndFillManager.size() == 0) {
 			IJ.error("Unable to load paths from swc file.");
 			return;
 		}
