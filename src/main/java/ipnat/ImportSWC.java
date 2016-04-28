@@ -66,10 +66,12 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 
 	private final String PREFS_KEY = "tracing.SWCImportOptionsDialog.";
 	private EnhancedGenericDialog settingsDialog;
-	private final String[] RENDING_OPTIONS = new String[] { "Untagged skeleton" , "3D viewer"};
-	private final int UNTAGGED_SKEL = 0;
+	private final String[] RENDING_OPTIONS = new String[] { "3D viewer (color)", "3D viewer (monochrome)",
+			"Untagged skeleton" };
+	private final int COLOR_3DVIEWER = 0;
 	private final int GRAY_3DVIEWER = 1;
-	private int rendingChoice;
+	private final int UNTAGGED_SKEL = 2;
+	private int rendingChoice = COLOR_3DVIEWER;
 
 	private double xOffset, yOffset, zOffset;
 	private double xScale, yScale, zScale;
@@ -182,16 +184,10 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 				imp.show();
 				break;
 			case GRAY_3DVIEWER:
-				univ = get3DUniverse();
-				if (univ == null) {
-					univ = new Image3DUniverse(width, height);
-				}
-				for (int i = 0; i < pathAndFillManager.size(); ++i) {
-					final Path p = pathAndFillManager.getPath(i);
-					p.addTo3DViewer(univ, Color.WHITE, colorImage);
-				}
-				GUI.center(univ.getWindow());
-				univ.show();
+				renderPathsIn3DViewer(false);
+				break;
+			case COLOR_3DVIEWER:
+				renderPathsIn3DViewer(true);
 				break;
 			default:
 				IJ.log("Bug: Unknown option...");
@@ -225,6 +221,42 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 
 		}
 
+	}
+
+	private synchronized void renderPathsIn3DViewer(final boolean colorize) {
+		univ = get3DUniverse();
+		if (univ == null) {
+			univ = new Image3DUniverse(width, height);
+		}
+		for (int i = 0; i < pathAndFillManager.size(); ++i) {
+			final Path p = pathAndFillManager.getPath(i);
+			final Color color = getSWCcolor(colorize ? p.getSWCType() : Path.SWC_UNDEFINED);
+			p.addTo3DViewer(univ, color, colorImage);
+		}
+		univ.show();
+		GUI.center(univ.getWindow());
+	}
+
+	private Color getSWCcolor(final int swcType) {
+		switch (swcType) {
+		case Path.SWC_SOMA:
+			return Color.MAGENTA;
+		case Path.SWC_DENDRITE:
+			return Color.GREEN;
+		case Path.SWC_APICAL_DENDRITE:
+			return Color.CYAN;
+		case Path.SWC_AXON:
+			return Color.BLUE;
+		case Path.SWC_FORK_POINT:
+			return Color.MAGENTA;
+		case Path.SWC_END_POINT:
+			return Color.PINK;
+		case Path.SWC_CUSTOM:
+			return Color.YELLOW;
+		case Path.SWC_UNDEFINED:
+		default:
+			return Color.WHITE;
+		}
 	}
 
 	/**
