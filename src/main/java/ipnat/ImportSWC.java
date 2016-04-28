@@ -33,8 +33,8 @@ import java.util.Vector;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
+import fiji.Debug;
 import ij.IJ;
-import ij.ImageJ;
 import ij.ImagePlus;
 import ij.Prefs;
 import ij.gui.DialogListener;
@@ -79,24 +79,20 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 	private double voxelWidth, voxelHeight, voxelDepth;
 	private String voxelUnit;
 	private File chosenFile;
-	private boolean guessOffsets = true;
+	private final boolean guessOffsets = true;
 
 	/**
 	 * Calls {@link fiji.Debug#runPlugIn(String, String, boolean)
 	 * fiji.Debug.runPlugIn()} so that the plugin can be debugged from an IDE
 	 */
 	public static void main(final String[] args) {
-		//Debug.runPlugIn("ipnat.ImportSWC", "", false);
-		ImageJ ij = IJ.getInstance();
-		if (ij == null || (ij != null && !ij.isShowing()))
-			ij = new ImageJ();
-		IJ.runPlugIn("ipnat.ImportSWC", "");
+		Debug.runPlugIn("ipnat.ImportSWC", "", false);
 	}
 
 	@Override
 	public void run(final String arg) {
 
-		if (chosenFile==null) {
+		if (chosenFile == null) {
 			final OpenDialog od = new OpenDialog("Open .swc file...", null, null);
 			final String directory = od.getDirectory();
 			final String fileName = od.getFileName();
@@ -164,7 +160,9 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 		depth = (cropped_canvas_z==1) ? 1 : cropped_canvas_z + 2;
 
 		// Define spatial calibration of stack. We must initialize
-		// stacks.ThreePanes.xy to avoid a NPE later on
+		// stacks.ThreePanes.xy to avoid a NPE later on, because
+		// tracing.SimpleNeuriteTracer.makePathVolume() inherits
+		// stacks.ThreePanes.xy's calibration
 		final Calibration cal = new Calibration();
 		cal.setUnit(voxelUnit);
 		cal.pixelWidth = voxelWidth;
@@ -177,8 +175,6 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 
 			switch (rendingChoice) {
 			case UNTAGGED_SKEL:
-				// tracing.SimpleNeuriteTracer.makePathVolume() will adopt
-				// stacks.ThreePanes.xy's calibration
 				final ImagePlus imp = makePathVolume();
 				imp.setTitle(chosenFile.getName());
 				imp.show();
@@ -202,7 +198,7 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 				return;
 			}
 
-			if (guessOffsets && chosenFile!=null 
+			if (guessOffsets && chosenFile!=null
 					&& new YesNoCancelDialog(IJ.getInstance(),
 							"Unable to render " + chosenFile.getName(),
 							"Re-try with guessed (presumably more suitable) settings?").yesPressed()) {
@@ -321,7 +317,7 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 		return settingsDialog.wasOKed();
 	}
 
-	
+
 	/* (non-Javadoc)
 	 * @see ij.gui.DialogListener#dialogItemChanged(ij.gui.GenericDialog, java.awt.AWTEvent)
 	 */
@@ -407,7 +403,7 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 			voxelHeight = Double.parseDouble(values[1]);
 			voxelDepth = Double.parseDouble(values[2]);
 			voxelUnit = values[3];
-		} catch (Exception ignored) {
+		} catch (final Exception ignored) {
 			voxelWidth = DEF_VOXEL_WIDTH;
 			voxelHeight = DEF_VOXEL_HEIGHT;
 			voxelDepth = DEF_VOXEL_DEPTH;
