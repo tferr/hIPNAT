@@ -52,7 +52,7 @@ import tracing.Path;
 import tracing.PathAndFillManager;
 import tracing.SimpleNeuriteTracer;
 
-// TODO: implement other rending options: tagged skeleton, 3D viewer, ClearVolume
+// TODO: implement other rending options: tagged skeleton, ClearVolume
 public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogListener {
 
 	/* Default options for swc import */
@@ -132,7 +132,8 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 		}
 
 		// Calculate smallest dimensions of stack holding the rendering of paths
-		// and suggest users with suitable offsets in case input was not suitable
+		// and suggest users with suitable offsets in case input was not
+		// suitable
 		int cropped_canvas_x = 1;
 		int cropped_canvas_y = 1;
 		int cropped_canvas_z = 1;
@@ -157,7 +158,7 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 		// errors in PathAndFillManager.setPathPointsInVolume()
 		width = cropped_canvas_x + 10;
 		height = cropped_canvas_y + 10;
-		depth = (cropped_canvas_z==1) ? 1 : cropped_canvas_z + 2;
+		depth = (cropped_canvas_z == 1) ? 1 : cropped_canvas_z + 2;
 
 		// Define spatial calibration of stack. We must initialize
 		// stacks.ThreePanes.xy to avoid a NPE later on, because
@@ -198,15 +199,14 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 				return;
 			}
 
-			if (guessOffsets && chosenFile!=null
-					&& new YesNoCancelDialog(IJ.getInstance(),
-							"Unable to render " + chosenFile.getName(),
+			if (guessOffsets && chosenFile != null
+					&& new YesNoCancelDialog(IJ.getInstance(), "Unable to render " + chosenFile.getName(),
 							"Re-try with guessed (presumably more suitable) settings?").yesPressed()) {
 				applyScale = false;
 				applyOffset = true;
-				xOffset = (x_guessed_offset==0d) ? 0d : x_guessed_offset * -1.05;
-				yOffset = (y_guessed_offset==0d) ? 0d : y_guessed_offset * -1.05;
-				zOffset = (z_guessed_offset==0d) ? 0d : z_guessed_offset * -1.05;
+				xOffset = (x_guessed_offset == 0d) ? 0d : x_guessed_offset * -1.05;
+				yOffset = (y_guessed_offset == 0d) ? 0d : y_guessed_offset * -1.05;
+				zOffset = (z_guessed_offset == 0d) ? 0d : z_guessed_offset * -1.05;
 				saveDialogSettings();
 				if (Recorder.record) {
 					Recorder.setCommand(Recorder.getCommand());
@@ -317,9 +317,11 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 		return settingsDialog.wasOKed();
 	}
 
-
-	/* (non-Javadoc)
-	 * @see ij.gui.DialogListener#dialogItemChanged(ij.gui.GenericDialog, java.awt.AWTEvent)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see ij.gui.DialogListener#dialogItemChanged(ij.gui.GenericDialog,
+	 * java.awt.AWTEvent)
 	 */
 	@Override
 	public boolean dialogItemChanged(final GenericDialog gd, final AWTEvent e) {
