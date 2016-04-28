@@ -199,8 +199,13 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 			}
 
 		} catch (final Exception e) {
-			if (IJ.debugMode)
+
+			final String RERUN_FLAG = "rerun";
+			if (IJ.macroRunning() || arg.equals(RERUN_FLAG)) {
 				IPNAT.handleException(e);
+				return;
+			}
+
 			if (guessOffsets && chosenFile!=null 
 					&& new YesNoCancelDialog(IJ.getInstance(),
 							"Unable to render " + chosenFile.getName(),
@@ -215,7 +220,7 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 					Recorder.setCommand(Recorder.getCommand());
 					Recorder.recordPath("open", chosenFile.getAbsolutePath());
 				}
-				run("");
+				run(RERUN_FLAG);
 			}
 
 		}
