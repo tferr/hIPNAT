@@ -236,13 +236,13 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 	private Color getSWCcolor(final int swcType) {
 		switch (swcType) {
 		case Path.SWC_SOMA:
-			return Color.MAGENTA;
+			return Color.BLUE;
 		case Path.SWC_DENDRITE:
 			return Color.GREEN;
 		case Path.SWC_APICAL_DENDRITE:
 			return Color.CYAN;
 		case Path.SWC_AXON:
-			return Color.BLUE;
+			return Color.RED;
 		case Path.SWC_FORK_POINT:
 			return Color.MAGENTA;
 		case Path.SWC_END_POINT:
