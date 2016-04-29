@@ -207,7 +207,7 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 				xOffset = (x_guessed_offset == 0d) ? 0d : x_guessed_offset * -1.05;
 				yOffset = (y_guessed_offset == 0d) ? 0d : y_guessed_offset * -1.05;
 				zOffset = (z_guessed_offset == 0d) ? 0d : z_guessed_offset * -1.05;
-				saveDialogSettings();
+				saveSWCSettings();
 				if (Recorder.record) {
 					Recorder.setCommand(Recorder.getCommand());
 					Recorder.recordPath("open", chosenFile.getAbsolutePath());
@@ -268,7 +268,7 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 	 *
 	 * @return {@code true} if user OKed dialog prompt, otherwise {@code false}
 	 */
-	private boolean getImportSettingsFromUser() {
+	private boolean getSWCsettingsFromUser() {
 		loadDialogSettings();
 		settingsDialog = new EnhancedGenericDialog("SWC import options");
 		settingsDialog.addCheckbox("Apply_calibration to SWC file coordinates:", !ignoreCalibration);
@@ -330,13 +330,13 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 			IJ.runPlugIn("ipnat.Help", "");
 			return true;
 		} else if (e != null && e.toString().contains("Restore")) {
-			resetPreferences();
+			resetSWCpreferences();
 			loadDialogSettings();
 			final Vector<?> checkboxes = gd.getCheckboxes();
 			for (int i = 0; i < checkboxes.size(); i++)
 				((Checkbox) checkboxes.elementAt(i)).setState(false);
 		} else {
-			setSettingsFromDialog();
+			setSWCsettingsFromDialog();
 		}
 		final Vector<?> nFields = gd.getNumericFields();
 		final Vector<?> sFields = gd.getStringFields();
@@ -351,7 +351,7 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 		return true;
 	}
 
-	private void setSettingsFromDialog() {
+	private void setSWCsettingsFromDialog() {
 		ignoreCalibration = !settingsDialog.getNextBoolean();
 		voxelWidth = settingsDialog.getNextNumber();
 		voxelHeight = settingsDialog.getNextNumber();
@@ -371,7 +371,7 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 		rendingChoice = settingsDialog.getNextChoiceIndex();
 	}
 
-	private void resetPreferences() {
+	private void resetSWCpreferences() {
 		Prefs.set(PREFS_KEY + "applyOffset", null);
 		Prefs.set(PREFS_KEY + "xOffset", null);
 		Prefs.set(PREFS_KEY + "yOffset", null);
@@ -413,7 +413,7 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 		}
 	}
 
-	private void saveDialogSettings() {
+	private void saveSWCSettings() {
 		Prefs.set(PREFS_KEY + "ignoreCalibration", String.valueOf(ignoreCalibration));
 		Prefs.set(PREFS_KEY + "voxelCalibration", ignoreCalibration ? null
 				: voxelWidth + "," + voxelHeight + "," + voxelDepth + "," + voxelUnit.replace(",", ""));
