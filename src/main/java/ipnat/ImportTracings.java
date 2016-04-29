@@ -53,7 +53,7 @@ import tracing.PathAndFillManager;
 import tracing.SimpleNeuriteTracer;
 
 // TODO: implement other rending options: tagged skeleton, ClearVolume
-public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogListener {
+public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, DialogListener {
 
 	/* Default options for swc import */
 	final double DEFAULT_OFFSET = 0d;
@@ -87,8 +87,8 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 	 * fiji.Debug.runPlugIn()} so that the plugin can be debugged from an IDE
 	 */
 	public static void main(final String[] args) {
-		//Debug.runPlugIn("ipnat.ImportSWC", "", false);
-		IJ.runPlugIn("ipnat.ImportSWC", "");
+		//Debug.runPlugIn("ipnat.ImportTracings", "", false);
+		IJ.runPlugIn("ipnat.ImportTracings", "");
 	}
 
 	@Override
@@ -111,12 +111,13 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 					1f, null);
 
 			// Retrieve import options from user and load paths from file
-			if (getSWCsettingsFromUser() && pathAndFillManager.importSWC(chosenFile.getAbsolutePath(),
-					ignoreCalibration, applyOffset ? xOffset : DEFAULT_OFFSET, applyOffset ? yOffset : DEFAULT_OFFSET,
+			if (!getSWCsettingsFromUser())
+				return;
+			saveSWCSettings();
+			pathAndFillManager.importSWC(chosenFile.getAbsolutePath(), ignoreCalibration,
+					applyOffset ? xOffset : DEFAULT_OFFSET, applyOffset ? yOffset : DEFAULT_OFFSET,
 					applyOffset ? zOffset : DEFAULT_OFFSET, applyScale ? xScale : DEFAULT_SCALE,
-					applyScale ? yScale : DEFAULT_SCALE, applyScale ? zScale : DEFAULT_SCALE, true)) {
-				saveSWCSettings();
-			}
+					applyScale ? yScale : DEFAULT_SCALE, applyScale ? zScale : DEFAULT_SCALE, true);
 
 		} else if (chosenFile.getName().toLowerCase().endsWith(".traces")) {
 	
@@ -272,7 +273,7 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 	 */
 	private boolean getSWCsettingsFromUser() {
 		loadDialogSettings();
-		settingsDialog = new EnhancedGenericDialog(chosenFile.getName() + " rendering");
+		settingsDialog = new EnhancedGenericDialog(chosenFile.getName() + " Rendering");
 		settingsDialog.addCheckbox("Apply_calibration to SWC file coordinates:", !ignoreCalibration);
 		settingsDialog.addNumericField("             Voxel_width", voxelWidth, 2);
 		settingsDialog.addNumericField("Voxel_height", voxelHeight, 2);
@@ -320,7 +321,7 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 	}
 
 	private boolean getTracesRendingChoice() {
-		settingsDialog = new EnhancedGenericDialog(chosenFile.getName() + " rendering");
+		settingsDialog = new EnhancedGenericDialog(chosenFile.getName() + " Rendering");
 		settingsDialog.addChoice("Render as:", RENDING_OPTIONS, RENDING_OPTIONS[rendingChoice]);
 		settingsDialog.assignListenerToHelpButton("About hIPNAT", new ActionListener() {
 			@Override
