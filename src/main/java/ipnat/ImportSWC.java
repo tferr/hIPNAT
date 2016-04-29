@@ -80,6 +80,7 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 	private String voxelUnit;
 	private File chosenFile;
 	private final boolean guessOffsets = true;
+	private boolean tracesFile = false;
 
 	/**
 	 * Calls {@link fiji.Debug#runPlugIn(String, String, boolean)
@@ -101,33 +102,32 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 			chosenFile = new File(directory, fileName);
 		}
 
-		if (!chosenFile.exists()) {
-			IJ.error("The file '" + chosenFile.getAbsolutePath() + "' is not available");
-			return;
+		if (chosenFile.getName().toLowerCase().endsWith(".swc")) {
+
+			// Allow any type of paths in PathAndFillManager by exaggerating its
+			// dimensions. We'll set x,y,z spacing to 1 w/o spatial calibration
+			pathAndFillManager = new PathAndFillManager(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, 1f, 1f,
+					1f, null);
+
+			// Retrieve import options from user and load paths from file
+			if (getSWCsettingsFromUser() && pathAndFillManager.importSWC(chosenFile.getAbsolutePath(),
+					ignoreCalibration, applyOffset ? xOffset : DEFAULT_OFFSET, applyOffset ? yOffset : DEFAULT_OFFSET,
+					applyOffset ? zOffset : DEFAULT_OFFSET, applyScale ? xScale : DEFAULT_SCALE,
+					applyScale ? yScale : DEFAULT_SCALE, applyScale ? zScale : DEFAULT_SCALE, true)) {
+				saveSWCSettings();
+			}
+
+		} else if (chosenFile.getName().toLowerCase().endsWith(".traces")) {
+	
+			if (!getTracesRendingChoice())
+				return;
+			pathAndFillManager = PathAndFillManager.createFromTracesFile(chosenFile.getAbsolutePath());
+			tracesFile = true;
+
 		}
 
-		// Allow any type of paths in PathAndFillManager by exaggerating its
-		// dimensions. We'll set x,y,z spacing to 1 with no spatial calibration
-		pathAndFillManager = new PathAndFillManager(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, 1f, 1f, 1f,
-				null);
-
-		// Retrieve import options from user and load paths from file
-		boolean successfullImport = getImportSettingsFromUser();
-		if (!successfullImport)
-			return;
-		saveDialogSettings();
-		successfullImport = pathAndFillManager.importSWC(
-				chosenFile.getAbsolutePath(),
-				ignoreCalibration,
-				applyOffset ? xOffset : DEFAULT_OFFSET,
-				applyOffset ? yOffset : DEFAULT_OFFSET,
-				applyOffset ? zOffset : DEFAULT_OFFSET,
-				applyScale ? xScale : DEFAULT_SCALE,
-				applyScale ? yScale : DEFAULT_SCALE,
-				applyScale ? zScale : DEFAULT_SCALE,
-				true);
-		if (!successfullImport || pathAndFillManager.size() == 0) {
-			IJ.error("Unable to load paths from swc file.");
+		if (pathAndFillManager == null || pathAndFillManager.size() == 0) {
+			Utils.error("Invalid File?", "Unable to load tracings from \n"+ chosenFile.getAbsolutePath(), null);
 			return;
 		}
 
@@ -165,10 +165,10 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 		// tracing.SimpleNeuriteTracer.makePathVolume() inherits
 		// stacks.ThreePanes.xy's calibration
 		final Calibration cal = new Calibration();
-		cal.setUnit(voxelUnit);
-		cal.pixelWidth = voxelWidth;
-		cal.pixelHeight = voxelHeight;
-		cal.pixelDepth = voxelDepth;
+		cal.setUnit(tracesFile ? spacing_units : voxelUnit);
+		cal.pixelWidth = tracesFile ? x_spacing : voxelWidth;
+		cal.pixelHeight = tracesFile ? y_spacing : voxelHeight;
+		cal.pixelDepth = tracesFile ? z_spacing : voxelDepth;
 		xy = new ImagePlus();
 		xy.setCalibration(cal);
 
@@ -314,6 +314,20 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 		settingsDialog.assignPopupToHelpButton(popup);
 		settingsDialog.showDialog();
 
+		return settingsDialog.wasOKed();
+	}
+
+	private boolean getTracesRendingChoice() {
+		settingsDialog = new EnhancedGenericDialog(chosenFile.getName() + " rendering");
+		settingsDialog.addChoice("Render as:", RENDING_OPTIONS, RENDING_OPTIONS[rendingChoice]);
+		settingsDialog.assignListenerToHelpButton("About hIPNAT", new ActionListener() {
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				IJ.runPlugIn("ipnat.Help", "");
+			}
+		});
+		settingsDialog.showDialog();
+		rendingChoice = settingsDialog.getNextChoiceIndex();
 		return settingsDialog.wasOKed();
 	}
 
