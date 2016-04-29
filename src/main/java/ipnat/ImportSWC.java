@@ -87,14 +87,15 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 	 * fiji.Debug.runPlugIn()} so that the plugin can be debugged from an IDE
 	 */
 	public static void main(final String[] args) {
-		Debug.runPlugIn("ipnat.ImportSWC", "", false);
+		//Debug.runPlugIn("ipnat.ImportSWC", "", false);
+		IJ.runPlugIn("ipnat.ImportSWC", "");
 	}
 
 	@Override
 	public void run(final String arg) {
 
 		if (chosenFile == null) {
-			final OpenDialog od = new OpenDialog("Open .swc file...", null, null);
+			final OpenDialog od = new OpenDialog("Open .swc or .traces file...", null, null);
 			final String directory = od.getDirectory();
 			final String fileName = od.getFileName();
 			if (fileName == null) // User pressed "Cancel"
@@ -154,6 +155,7 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 
 			}
 		}
+
 		// Padding" is essential to accommodate for "rounding"
 		// errors in PathAndFillManager.setPathPointsInVolume()
 		width = cropped_canvas_x + 10;
@@ -270,7 +272,7 @@ public class ImportSWC extends SimpleNeuriteTracer implements PlugIn, DialogList
 	 */
 	private boolean getSWCsettingsFromUser() {
 		loadDialogSettings();
-		settingsDialog = new EnhancedGenericDialog("SWC import options");
+		settingsDialog = new EnhancedGenericDialog(chosenFile.getName() + " rendering");
 		settingsDialog.addCheckbox("Apply_calibration to SWC file coordinates:", !ignoreCalibration);
 		settingsDialog.addNumericField("             Voxel_width", voxelWidth, 2);
 		settingsDialog.addNumericField("Voxel_height", voxelHeight, 2);
