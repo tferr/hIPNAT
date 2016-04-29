@@ -207,7 +207,7 @@ public class Strahler implements PlugIn, DialogListener {
 			final Rectangle r = rootRoi.getBounds();
 			while (it.hasNext()) {
 				final Point p = it.next();
-				if (p.x == r.x || p.y == r.y || p.x == r.x + r.getWidth() - 1 || p.y == r.y + r.getHeight() - 1)
+				if (p.x == r.x || p.y == r.y || p.x == (int)(r.x + r.getWidth() - 1) || p.y == (int)(r.y + r.getHeight() - 1))
 					it.remove();
 			}
 			rootResult.setListOfEndPoints(rootEndpointsList);
