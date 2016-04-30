@@ -269,6 +269,8 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 	}
 
 	private Color getSWCcolor(String pathName) {
+		if (pathName == null)
+			return getSWCcolor(Path.SWC_UNDEFINED);
 		for (int i = 0; i < Path.swcTypeNames.length; i++) {
 			if (Path.swcTypeNames[i].toLowerCase().contains(pathName.toLowerCase()))
 				return getSWCcolor(i);
