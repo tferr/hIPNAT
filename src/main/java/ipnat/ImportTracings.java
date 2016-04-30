@@ -27,6 +27,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.IndexColorModel;
 import java.io.File;
 import java.util.Vector;
 
@@ -66,11 +67,12 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 
 	private final String PREFS_KEY = "tracing.SWCImportOptionsDialog.";
 	private EnhancedGenericDialog settingsDialog;
-	private final String[] RENDING_OPTIONS = new String[] { "3D viewer (color)", "3D viewer (monochrome)",
-			"Untagged skeleton" };
-	private final int COLOR_3DVIEWER = 0;
-	private final int GRAY_3DVIEWER = 1;
-	private final int UNTAGGED_SKEL = 2;
+	private final String[] RENDING_OPTIONS = new String[] { "3D viewer (monochrome)", "3D viewer (colored by SWC type)",
+			"3D viewer (colored by path ID)", "Untagged skeleton" };
+	private final int GRAY_3DVIEWER = 0;
+	private final int COLOR_3DVIEWER = 1;
+	private final int COLORMAP_3DVIEWER = 2;
+	private final int UNTAGGED_SKEL = 3;
 	private int rendingChoice = COLOR_3DVIEWER;
 
 	private double xOffset, yOffset, zOffset;
@@ -184,10 +186,9 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 				imp.show();
 				break;
 			case GRAY_3DVIEWER:
-				renderPathsIn3DViewer(false);
-				break;
 			case COLOR_3DVIEWER:
-				renderPathsIn3DViewer(true);
+			case COLORMAP_3DVIEWER:
+				renderPathsIn3DViewer(rendingChoice);
 				break;
 			default:
 				IJ.log("Bug: Unknown option...");
@@ -222,18 +223,27 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 
 	}
 
-	private synchronized void renderPathsIn3DViewer(final boolean colorize) {
+	private synchronized void renderPathsIn3DViewer(final int rendingChoice) {
 		univ = get3DUniverse();
 		if (univ == null) {
 			univ = new Image3DUniverse(width, height);
 		}
+		Color color = getSWCcolor(Path.SWC_UNDEFINED);
 		for (int i = 0; i < pathAndFillManager.size(); ++i) {
 			final Path p = pathAndFillManager.getPath(i);
-			final Color color = getSWCcolor(colorize ? p.getSWCType() : Path.SWC_UNDEFINED);
+			if (rendingChoice == COLOR_3DVIEWER)
+				color = tracesFile ? getSWCcolor(p.getName()) : getSWCcolor(p.getSWCType());
+			if (rendingChoice == COLORMAP_3DVIEWER)
+				color = getIndexColor(255 * i / pathAndFillManager.size());
 			p.addTo3DViewer(univ, color, colorImage);
 		}
 		univ.show();
 		GUI.center(univ.getWindow());
+	}
+
+	private Color getIndexColor(int idx) {
+		IndexColorModel cm = ColorMaps.viridisColorMap(-1, false);
+		return new Color(cm.getRed(idx), cm.getGreen(idx), cm.getBlue(idx));
 	}
 
 	private Color getSWCcolor(final int swcType) {
