@@ -436,10 +436,29 @@ public class Strahler implements PlugIn, DialogListener {
 	 *         macro friendly {@link Utils#error(String) error} is displayed.
 	 */
 	boolean validRequirements(final ImagePlus imp) {
-		final boolean validImp = imp != null && imp.getBitDepth() == 8;
+		boolean validImp = imp != null && imp.getBitDepth() == 8;
 		final boolean validSetup = Utils.validSkelDependencies();
-		if (!validImp)
-			error("An 8-bit image is required but none was found.");
+		if (!validImp) {
+			final String msg = (imp == null) ? "An 8-bit image is required but none was found."
+					: imp.getTitle() + " is not an 8-bit image.";
+			if (IJ.macroRunning()) {
+				Utils.error("Invalid image", msg, imp);
+			} else {
+				final GenericDialog gd = new GenericDialog("Invalid Image");
+				gd.addMessage(msg);
+				gd.enableYesNoCancel("OK", "Analyze Sample Image");
+				gd.hideCancelButton();
+				gd.showDialog();
+				if (!gd.wasOKed() && !gd.wasCanceled()) {
+					final LSystemsTree lst = new LSystemsTree();
+					this.srcImp = lst.sampleTree();
+					this.srcImp.setRoi(58, 130, 25, 35);
+					srcImp.show();
+					new ij.plugin.Zoom().run("in");
+					validImp = true;
+				}
+			}
+		}
 		return validSetup && validImp;
 	}
 
