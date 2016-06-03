@@ -7,13 +7,23 @@
 # @Double(label="Max. \"Snap to\" distance", description="In calibrated units", value=5.090) cutoff_dist
 # @Boolean(label="Measure classified ROIs", value=false) measure_rois
 
-# 90% of all particles have a feret <= 5.090 >>> 20% of inter-bp distance
-# 80% of all particles have a feret <= 3.400
 
-# ClassifyParticlesBySkeletonProperties.py
-# https://github.com/tferr/Scripts/
-# Tags particles according to skeleton features
-# TF 20160527
+"""
+    ClassifyParticlesUsingSkeletonFeatures.py
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    Tags particles according to skeleton features: Runs IJ's ParticleAnalyzer on
+    one image and clusters detected particles according to their positioning to
+    features of a tagged skeleton in another image. A particle is considered to
+    be associated to a skeleton feature if the distance between its centroid and
+    the feature is less than or equal to a cuttoff ("snap to") distance.
+
+    :version: 20160603
+    :copyright: 2016 TF
+    :url: https://github.com/tferr/hIPNAT
+    :license: GPL3, see LICENSE for more details
+"""
+
 
 from ij import IJ, Macro
 from ij.measure import Measurements as M, ResultsTable
@@ -62,7 +72,7 @@ except:
 
 # Loop through particles' centroids and place each particle in a
 # dedicated list according to its distance to skeleton features
-half_px = min(imp.getCalibration().pixelWidth, imp.getCalibration().pixelHeight) / 2 
+half_px = min(imp.getCalibration().pixelWidth, imp.getCalibration().pixelHeight) / 2
 n_bp = n_tip = n_shaft = n_hybrid = 0
 j_indices = []
 ep_indices = []
@@ -142,8 +152,8 @@ log("BP particles: ", n_bp, ", ", ratio(n_bp, n_particles), "%")
 log("Tip particles: ", n_tip, ", ", ratio(n_tip, n_particles), "%")
 log("Shaft particles: ", n_shaft, ", ", ratio(n_shaft, n_particles), "%")
 log("Hybrid particles: ", n_hybrid, ", ", ratio(n_hybrid, n_particles), "%")
-log("Ocuppied BPs: ", n_bp + n_hybrid, ", ", ratio(n_bp+n_hybrid, n_junctions), "%")
-log("Ocuppied Tips: ", n_tip + n_hybrid, ", ", ratio(n_tip+n_hybrid, len(end_points)), "%")
+log("Occupied BPs: ", n_bp + n_hybrid, ", ", ratio(n_bp+n_hybrid, n_junctions), "%")
+log("Occupied Tips: ", n_tip + n_hybrid, ", ", ratio(n_tip+n_hybrid, len(end_points)), "%")
 log("\nCutoff distance: ", cutoff_dist, imp.getCalibration().getUnits())
 log("Threshold range: ", threshold_lower, "-", threshold_upper)
 log("Size range: ", size_min, "-", size_max)
