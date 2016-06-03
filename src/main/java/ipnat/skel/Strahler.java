@@ -413,7 +413,7 @@ public class Strahler implements PlugIn, DialogListener {
 			if (validRootRoi)
 				imp3.setRoi(rootRoi);
 			imp3.show();
-			addCalibrationBar(imp3, Math.min(order, 5));
+			addCalibrationBar(imp3, Math.min(order, 5), "Black");
 		}
 		if (verbose)
 			logrt.show(VERBOSE_TABLE);
@@ -690,14 +690,17 @@ public class Strahler implements PlugIn, DialogListener {
 	 *            the image to processed
 	 * @param nLabels
 	 *            the n. of labels in the calibration bar
-	 */
-	void addCalibrationBar(final ImagePlus imp, final int nLabels) {
+	 * @param color
+	 *            Labels' foreground color as per {@link ij.plugin.Colors}
+	 **/
+	void addCalibrationBar(final ImagePlus imp, final int nLabels, final String color) {
 		final ImageCanvas ic = imp.getCanvas();
-		double zoom = 1.0;
+		double zoom = (imp.getHeight() > 200) ? 1.0 : 0.8;
 		final double mag = (ic != null) ? ic.getMagnification() : 1.0;
 		if (zoom <= 1 && mag < 1)
 			zoom = 1.0 / mag;
-		IJ.run(imp, "Calibration Bar...", "fill=Black label=White number=" + nLabels + " zoom=" + zoom + " overlay");
+		IJ.run(imp, "Calibration Bar...",
+				"fill=None label=" + color + " number=" + nLabels + " zoom=" + zoom + " overlay");
 	}
 
 	/**
