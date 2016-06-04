@@ -22,19 +22,27 @@
 package ipnat;
 
 
+import java.net.URL;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
+
 import ij.IJ;
 
 public class IPNAT {
 
-	public static final String VERSION = "1.0.4dev";
-	public static final String BUILD = "";
 	public static final String EXTENDED_NAME = "Image Processing for NeuroAnatomy and Tree-like structures";
 	public static final String ABBREV_NAME = "hIPNAT";
 	public static final String DOC_URL = "http://imagej.net/Neuroanatomy";
 	public static final String SRC_URL = "https://github.com/tferr/hIPNAT";
+	private static String VERSION = null;
+	private static String BUILD = null;
 
-	public static String getReadableVersion() {
-		return ABBREV_NAME + " v" + VERSION + BUILD;
+	public static String getFullVersion() {
+		return ABBREV_NAME + " v" + version(true);
+	}
+
+	public static String getVersion() {
+		return ABBREV_NAME + " v" + version(false);
 	}
 
 	public static void handleException(Exception e) {
@@ -43,4 +51,45 @@ public class IPNAT {
 		IJ.setExceptionHandler(null); // Revert to the default behavior
 	}
 
+	/**
+	 * Retrieves hIPNAT's version
+	 *
+	 * @param implementationDate
+	 *            If {@code true}, a date stamp from the package implementation
+	 *            date is appended to the string
+	 * @return the version or a non-empty place holder string if version could
+	 *         not be retrieved.
+	 *
+	 */
+	private static String version(boolean implementationDate) {
+		// See http://stackoverflow.com/questions/1272648/
+		// http://blog.soebes.de/blog/2014/01/02/version-information-into-your-appas-with-maven/
+
+		if (VERSION == null) {
+			final Package pkg = IPNAT.class.getPackage();
+			if (pkg != null)
+				VERSION = pkg.getImplementationVersion();
+			if (VERSION == null)
+				VERSION = "X Dev";
+		}
+		if (implementationDate) {
+			if (BUILD == null) {
+				final Class<IPNAT> clazz = IPNAT.class;
+				final String className = clazz.getSimpleName() + ".class";
+				final String classPath = clazz.getResource(className).toString();
+				final String manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 1)
+						+ "/META-INF/MANIFEST.MF";
+				try {
+					final Manifest manifest = new Manifest(new URL(manifestPath).openStream());
+					final Attributes attr = manifest.getMainAttributes();
+					BUILD = attr.getValue("Implementation-Date");
+					BUILD = BUILD.substring(0, BUILD.lastIndexOf("T"));
+				} catch (final Exception ignored) {
+					BUILD = null;
+				}
+			}
+			return (BUILD == null) ? VERSION : VERSION + ", " + BUILD;
+		}
+		return VERSION;
+	}
 }

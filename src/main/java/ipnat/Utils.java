@@ -82,7 +82,7 @@ public class Utils {
 	 *            {@code null}
 	 */
 	public static void error(final String errorTitle, final String errorMsg, final ImagePlus imp) {
-		String title = IPNAT.getReadableVersion();
+		String title = IPNAT.getVersion();
 		if (errorTitle != null)
 			title = errorTitle + " (" + title + ")";
 		final String impMsg = (imp == null) ? "" : "Error while processing " + imp.getTitle();

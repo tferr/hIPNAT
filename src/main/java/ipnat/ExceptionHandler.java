@@ -61,7 +61,7 @@ public class ExceptionHandler implements IJ.ExceptionHandler {
 		}
 		tMsg += " (details below). " + TIPS + "\n \n" + trace;
 		if (IJ.getInstance() != null) {
-			new TextWindow("Exception", IPNAT.getReadableVersion(), tMsg, 500, 250);
+			new TextWindow("Exception", IPNAT.getVersion(), tMsg, 500, 250);
 		} else
 			IJ.log(tMsg);
 	}
