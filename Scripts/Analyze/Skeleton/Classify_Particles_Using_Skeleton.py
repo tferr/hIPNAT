@@ -9,8 +9,8 @@
 
 
 """
-    ClassifyParticlesUsingSkeletonFeatures.py
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Classify_Particles_Using_Skeleton.py
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Tags particles according to skeleton features: Runs IJ's ParticleAnalyzer on
     one image and clusters detected particles according to their positioning to
