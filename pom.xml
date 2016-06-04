@@ -14,7 +14,7 @@
 
 <groupId>com.github.tferr</groupId>
 <artifactId>hIPNAT_</artifactId>
-<version>1.0.4-SNAPSHOT</version>
+<version>1.0.4</version>
 
 <name>hIPNAT</name>
 <description>(highly capable) Image Processing Tools for Neuroanatomy and Tree-like structures</description>
