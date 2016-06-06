@@ -151,7 +151,7 @@ public class Strahler implements PlugIn, DialogListener {
 		if (srcImp.getNSlices() > 1) {
 			final String warning = "3D images are currently supported with the following limitations:\n"
 					+ "    - 'Root-protecting' ROIs are not yet supported\n"
-					+ "    - Provided lengths are estimated from Z-projections\n \n"
+					+ "    - Lengths are estimated from Z-projections\n \n"
 					+ "These issues will be addressed in future releases.";
 			if (IJ.macroRunning())
 				IJ.log(warning);
@@ -536,6 +536,14 @@ public class Strahler implements PlugIn, DialogListener {
 		});
 		popup.add(mi);
 		popup.addSeparator();
+		mi = new JMenuItem("List hIPNAT commands...");
+		mi.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				IJ.runPlugIn("ij.plugin.BrowserLauncher", IPNAT.DOC_URL + "#List_of_commands");
+			}
+		});
+		popup.add(mi);
 		mi = new JMenuItem("About hIPNAT plugins...");
 		mi.addActionListener(new ActionListener() {
 			@Override
