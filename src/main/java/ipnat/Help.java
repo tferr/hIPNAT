@@ -161,8 +161,12 @@ public class Help implements PlugIn {
 				+ "<div WIDTH=390>"
 				+ "<h3>" + IPNAT.ABBREV_NAME + " v" + IPNAT.VERSION + "   "+ IPNAT.BUILD_DATE + "</h3>"
 				+ IPNAT.EXTENDED_NAME
-				+ "<h3>Author/Maintainer</h3>"
+				+ "<h3>Author</h3>"
 				+ "<a href='http://imagej.net/User:Tiago'>Tiago Ferreira</a>"
+				+ "<h3>Citation</h3>"
+				+ "<a href='http://dx.doi.org/10.5281/zenodo.54795'>"
+				+ "Ferreira et al (" + IPNAT.BUILD_YEAR +")"
+				+ ". DOI: 10.5281/zenodo.54795</a>"
 				+ "<h3>Development</h3>"
 				+ "<a href='"+ IPNAT.SRC_URL +"/releases'>Release History</a> | "
 				+ "<a href='"+ IPNAT.SRC_URL +"'>Source Code</a> | "
@@ -195,13 +199,13 @@ public class Help implements PlugIn {
 		final JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.PAGE_AXIS));
 
-		addHeaderLabel(buttonPanel, "Documentation Resources:");
-		JButton button = URLButton("Neuroanatomy Tools", "http://imagej.net/Neuroanatomy");
+		addHeaderLabel(buttonPanel, IPNAT.ABBREV_NAME + " Resources:");
+		JButton button = URLButton("Documentation", IPNAT.DOC_URL);
 		buttonPanel.add(button);
-		button = URLButton("Neuroanatomy Update Site", "http://imagej.net/User:Neuroanatomy");
+		button = URLButton("List Installed Commands", IPNAT.DOC_URL + "#List_of_commands");
 		buttonPanel.add(button);
-		button = URLButton(IPNAT.ABBREV_NAME +" on GitHub", IPNAT.SRC_URL);
-		buttonPanel.add(button);
+		//button = URLButton(IPNAT.ABBREV_NAME + " on GitHub", IPNAT.SRC_URL);
+		//buttonPanel.add(button);
 
 		addHeaderLabel(buttonPanel, "ImageJ Resources:");
 		button = URLButton("Search Portal", "http://search.imagej.net");
