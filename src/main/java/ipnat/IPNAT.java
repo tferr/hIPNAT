@@ -50,6 +50,10 @@ public class IPNAT {
 		IJ.setExceptionHandler(null); // Revert to the default behavior
 	}
 
+	public static String getVersion() {
+		return ABBREV_NAME + " v" + VERSION;
+	}
+
 	/**
 	 * Retrieves hIPNAT's version
 	 *

@@ -484,7 +484,7 @@ public class Strahler implements PlugIn, DialogListener {
 	boolean getSettings() {
 
 		final EnhancedGenericDialog gd = new EnhancedGenericDialog(
-				"Strahler Analysis :: " + IPNAT.VERSION);
+				"Strahler Analysis :: " + IPNAT.getVersion());
 		final Font headerFont = new Font("SansSerif", Font.BOLD, 12);
 		gd.setSmartRecording(true);
 
