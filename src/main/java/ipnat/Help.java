@@ -159,7 +159,7 @@ public class Help implements PlugIn {
 				+ "</style>"
 				+ "</head>"
 				+ "<div WIDTH=390>"
-				+ "<h3>" + IPNAT.getFullVersion() + "</h3>"
+				+ "<h3>" + IPNAT.ABBREV_NAME + " v" + IPNAT.VERSION + "   "+ IPNAT.BUILD_DATE + "</h3>"
 				+ IPNAT.EXTENDED_NAME
 				+ "<h3>Author/Maintainer</h3>"
 				+ "<a href='http://imagej.net/User:Tiago'>Tiago Ferreira</a>"
