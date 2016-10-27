@@ -93,6 +93,10 @@
 			<groupId>sc.fiji</groupId>
 			<artifactId>Fiji_Plugins</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.scijava</groupId>
+			<artifactId>scijava-common</artifactId>
+		</dependency>
 </dependencies>
 
 <build>
