@@ -36,7 +36,7 @@ def run():
                 conversion_counter += 1
             else:
                 raise IOError
-        except:
+        except IOError:
             log.error('Could not convert ' + traces_filename)
     log.info(str(conversion_counter) + ' file(s) successfully converted')
 
