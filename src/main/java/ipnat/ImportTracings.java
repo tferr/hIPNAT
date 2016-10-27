@@ -97,7 +97,7 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 	public void run(final String arg) {
 
 		if (chosenFile == null) {
-			final OpenDialog od = new OpenDialog("Open .swc or .traces file...", null, null);
+			final OpenDialog od = new OpenDialog("Open .(e)swc or .traces file...", null, null);
 			final String directory = od.getDirectory();
 			final String fileName = od.getFileName();
 			if (fileName == null) // User pressed "Cancel"
@@ -105,7 +105,8 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 			chosenFile = new File(directory, fileName);
 		}
 
-		if (chosenFile.getName().toLowerCase().endsWith(".swc")) {
+		final String filename = chosenFile.getName().toLowerCase();
+		if (filename.endsWith(".swc") || filename.endsWith(".eswc")) {
 
 			// Allow any type of paths in PathAndFillManager by exaggerating its
 			// dimensions. We'll set x,y,z spacing to 1 w/o spatial calibration
