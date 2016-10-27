@@ -224,7 +224,7 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 
 	}
 
-	private synchronized void renderPathsIn3DViewer(final int rendingChoice) {
+	private synchronized void renderPathsIn3DViewer(final int choice) {
 		univ = get3DUniverse();
 		if (univ == null) {
 			univ = new Image3DUniverse(width, height);
@@ -232,9 +232,9 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 		Color color = getSWCcolor(Path.SWC_UNDEFINED);
 		for (int i = 0; i < pathAndFillManager.size(); ++i) {
 			final Path p = pathAndFillManager.getPath(i);
-			if (rendingChoice == COLOR_3DVIEWER)
+			if (choice == COLOR_3DVIEWER)
 				color = tracesFile ? getSWCcolor(p.getName()) : getSWCcolor(p.getSWCType());
-			if (rendingChoice == COLORMAP_3DVIEWER)
+			if (choice == COLORMAP_3DVIEWER)
 				color = getIndexColor(255 * i / pathAndFillManager.size());
 			p.addTo3DViewer(univ, color, colorImage);
 		}

@@ -207,7 +207,8 @@ public class Strahler implements PlugIn, DialogListener {
 			final Rectangle r = rootRoi.getBounds();
 			while (it.hasNext()) {
 				final Point p = it.next();
-				if (p.x == r.x || p.y == r.y || p.x == (int)(r.x + r.getWidth() - 1) || p.y == (int)(r.y + r.getHeight() - 1))
+				if (p.x == r.x || p.y == r.y || p.x == (int) (r.x + r.getWidth() - 1)
+						|| p.y == (int) (r.y + r.getHeight() - 1))
 					it.remove();
 			}
 			rootResult.setListOfEndPoints(rootEndpointsList);
@@ -270,7 +271,7 @@ public class Strahler implements PlugIn, DialogListener {
 
 			// Add current tree(s) to debug animation
 			ImageProcessor ipd;
-			if (nSlices > 1) {
+			if (nSlices > 1 && zp != null) {
 				zp.doProjection();
 				ipd = zp.getProjection().getProcessor();
 			} else {
@@ -314,18 +315,19 @@ public class Strahler implements PlugIn, DialogListener {
 			logrt.addValue("Image", title);
 			logrt.addValue("Structure", "Root");
 			logrt.addValue("Notes", msg);
-			logrt.addValue("# Trees", rootResult.getNumOfTrees());
-			logrt.addValue("# Branches", sum(rootResult.getBranches()));
+			logrt.addValue("# Trees", rootResult == null ? 0 : rootResult.getNumOfTrees());
+			logrt.addValue("# Branches", rootResult == null ? 0 : sum(rootResult.getBranches()));
 			logrt.addValue("# End-points", nRootEndpoints);
 			logrt.addValue("# Junctions", nRootJunctions);
-			logrt.addValue("# Triple points", sum(rootResult.getTriples()));
-			logrt.addValue("# Quadruple points", sum(rootResult.getQuadruples()));
-			logrt.addValue("Average branch length", average(rootResult.getAverageBranchLength()));
+			logrt.addValue("# Triple points", rootResult == null ? 0 : sum(rootResult.getTriples()));
+			logrt.addValue("# Quadruple points", rootResult == null ? 0 : sum(rootResult.getQuadruples()));
+			logrt.addValue("Average branch length",
+					rootResult == null ? Double.NaN : average(rootResult.getAverageBranchLength()));
 
 		}
 
 		// Safety check
-		if (iterationStack == null || iterationStack.getSize() < 1) {
+		if (iterationStack.getSize() < 1) {
 			error("Enable \"detailed\" mode and check " + VERBOSE_TABLE + " for details.");
 			return;
 		}
@@ -433,7 +435,7 @@ public class Strahler implements PlugIn, DialogListener {
 	 * @param imp
 	 *            the image to be analyzed
 	 * @return {@code true}, if assessment was successful. If {@code false} a
-	 *         macro friendly {@link Utils#error(String) error} is displayed.
+	 *         macro friendly {@link Utils#error} is displayed.
 	 */
 	boolean validRequirements(final ImagePlus imp) {
 		boolean validImp = imp != null && imp.getBitDepth() == 8;
@@ -483,8 +485,7 @@ public class Strahler implements PlugIn, DialogListener {
 	 */
 	boolean getSettings() {
 
-		final EnhancedGenericDialog gd = new EnhancedGenericDialog(
-				"Strahler Analysis :: " + IPNAT.getVersion());
+		final EnhancedGenericDialog gd = new EnhancedGenericDialog("Strahler Analysis :: " + IPNAT.getVersion());
 		final Font headerFont = new Font("SansSerif", Font.BOLD, 12);
 		gd.setSmartRecording(true);
 
@@ -502,8 +503,8 @@ public class Strahler implements PlugIn, DialogListener {
 		// 8-bit grayscale is the only image type recognized by
 		// AnalyzeSkeleton_,
 		// so we'll provide the user with a pre-filtered list of valid choices
-		final ArrayList<Integer> validIds = new ArrayList<Integer>();
-		final ArrayList<String> validTitles = new ArrayList<String>();
+		final ArrayList<Integer> validIds = new ArrayList<>();
+		final ArrayList<String> validTitles = new ArrayList<>();
 		final int[] ids = WindowManager.getIDList();
 		for (int i = 0; i < ids.length; ++i) {
 			final ImagePlus imp = WindowManager.getImage(ids[i]);
@@ -607,7 +608,7 @@ public class Strahler implements PlugIn, DialogListener {
 	 * Returns the sum of the values in the input array, or zero if the array is
 	 * empty or {@code null}.
 	 *
-	 * @param the
+	 * @param array
 	 *            array of values to be summed
 	 * @return the sum of elements in the array. Returns zero if array is
 	 *         {@code null} or empty.
@@ -624,7 +625,7 @@ public class Strahler implements PlugIn, DialogListener {
 	 * Returns the sum of the values in the input array, or zero if the array is
 	 * empty or {@code null}.
 	 *
-	 * @param the
+	 * @param array
 	 *            array of values to be summed
 	 * @return the sum of elements in the array. Returns zero if array is
 	 *         {@code null} or empty.
@@ -641,7 +642,7 @@ public class Strahler implements PlugIn, DialogListener {
 	 * Returns the arithmetic mean of the values in the input array, or
 	 * {@code Double.NaN} if the array is empty or {@code null}.
 	 *
-	 * @param the
+	 * @param array
 	 *            array of values to be averaged
 	 * @return the arithmetic mean of the array. Returns {@code Double.NaN} if
 	 *         array is {@code null} or empty.
@@ -650,8 +651,7 @@ public class Strahler implements PlugIn, DialogListener {
 		if (array != null && array.length > 0)
 			return sum(array) / array.length; // TODO Use
 												// org.apache.commons.math3.stat.StatUtils?
-		else
-			return Double.NaN;
+		return Double.NaN;
 	}
 
 	/* Paints point positions. */
