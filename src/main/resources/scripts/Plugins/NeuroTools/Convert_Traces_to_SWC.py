@@ -1,25 +1,44 @@
-import os
-import re
+# @String(value="This script converts all .traces files in a directory into SWC. Conversion log will be displayed in Console.", visibility="MESSAGE") msg
+# @File(label="Directory of .traces files:", style="directory") input_dir
+# @LogService log
+# @StatusService status
+
+'''
+file:       Convert_Traces_to_SWC.py
+author:     Mark Longair / Tiago Ferreira
+version:    20161027
+info:       Converts all .traces files in a directory into SWC.
+            Built from https://gist.github.com/mhl/888051
+'''
+
+import os, re
 from tracing import PathAndFillManager
 
-# An example script showing how to convert all the .traces
-# files in a directory to SWC files.  (The .traces format
-# is the native file format of Simple Neurite Tracer.)
-
 def run():
-    d = IJ.getDirectory("Choose your directory of .traces files...")
-    if not d:
+    if not input_dir:
         return
+    status.showStatus("Converting .traces files...")
+    conversion_counter = 0
+    d = str(input_dir)
+    log.info('Processing ' + d + '...')
     for e in os.listdir(d):
-        if not e.endswith(".traces"):
+        if not e.endswith('.traces'):
+            log.info('Skipping ' + e + '...')
             continue
-        traces_filename = os.path.join(d,e)
+        traces_filename = os.path.join(d, e)
         swc_filename_prefix = re.sub(r'\.traces', '-exported', traces_filename)
-        IJ.log("Converting %s to %s-*.swc" % (traces_filename,
-                                              swc_filename_prefix))
+        log.info('Converting %s to %s-*.swc' % (traces_filename, swc_filename_prefix))
         pafm = PathAndFillManager()
-        pafm.loadGuessingType(traces_filename)
-        if pafm.checkOKToWriteAllAsSWC(swc_filename_prefix):
-            pafm.exportAllAsSWC(swc_filename_prefix)
+        try:
+            pafm.loadGuessingType(traces_filename)
+            if pafm.checkOKToWriteAllAsSWC(swc_filename_prefix):
+                pafm.exportAllAsSWC(swc_filename_prefix)
+                conversion_counter += 1
+            else:
+                raise IOError
+        except:
+            log.error('Could not convert ' + traces_filename)
+    log.info(str(conversion_counter) + ' file(s) successfully converted')
 
-run()
+if __name__ == '__main__':
+    run()
