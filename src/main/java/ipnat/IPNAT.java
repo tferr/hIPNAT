@@ -26,6 +26,8 @@ import java.net.URL;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+import org.scijava.util.VersionUtils;
+
 import ij.IJ;
 
 public class IPNAT {
@@ -62,13 +64,9 @@ public class IPNAT {
 	 *
 	 */
 	private static String version() {
-		// http://blog.soebes.de/blog/2014/01/02/version-information-into-your-appas-with-maven/
 		if (VERSION == null) {
-			final Package pkg = IPNAT.class.getPackage();
-			if (pkg != null)
-				VERSION = pkg.getImplementationVersion();
-			if (VERSION == null)
-				VERSION = "X Dev";
+			VERSION = VersionUtils.getVersion(IPNAT.class);
+			return (VERSION == null) ? "X Dev" : VERSION;
 		}
 		return VERSION;
 	}
