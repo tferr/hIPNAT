@@ -6,7 +6,7 @@
 # @ImagePlus(label="Skeleton image (8-bit)") impSkel
 # @Double(label="Max. \"Snap to\" distance", description="In calibrated units", value=5.090) cutoff_dist
 # @Boolean(label="Measure classified ROIs", value=false) measure_rois
-
+# @LogService ls
 
 """
     Classify_Particles_Using_Skeleton.py
@@ -18,7 +18,7 @@
     be associated to a skeleton feature if the distance between its centroid and
     the feature is less than or equal to a cuttoff ("snap to") distance.
 
-    :version: 20160603
+    :version: 20161020
     :copyright: 2016 TF
     :url: https://github.com/tferr/hIPNAT
     :license: GPL3, see LICENSE for more details
@@ -36,20 +36,16 @@ def distance(x1, y1, x2, y2):
      return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
 # Retrieve list of skeleton landmarks (here, end/junction points)
-try:
-    skel_analyzer = AnalyzeSkeleton_()
-    skel_analyzer.setup("", impSkel);
-    skel_result = skel_analyzer.run();
-    end_points = skel_result.getListOfEndPoints()
-    n_junctions = sum(skel_result.getJunctions())
-    junction_voxels= skel_result.getListOfJunctionVoxels()
-    if not end_points and not junction_voxels:
-        raise Exception(Macro.MACRO_CANCELED)
-except:
-    IJ.error(impSkel.getTitle() + " does not seem a valid skeleton.")
-    raise Exception(Macro.MACRO_CANCELED)
+skel_analyzer = AnalyzeSkeleton_()
+skel_analyzer.setup("", impSkel);
+skel_result = skel_analyzer.run();
+end_points = skel_result.getListOfEndPoints()
+n_junctions = sum(skel_result.getJunctions())
+junction_voxels= skel_result.getListOfJunctionVoxels()
+if not end_points and not junction_voxels:
+    raise RuntimeError(impSkel.getTitle() + " does not seem a valid skeleton.")
 
-# Ensure no data from previous runs exits
+# Ensure no data from previous runs exists
 rt = ResultsTable()
 rt.reset()
 rm = RoiManager.getInstance()
@@ -67,8 +63,7 @@ try:
     cy = rt.getColumn(ResultsTable.Y_CENTROID) #Y_CENTER_OF_MASS
     n_particles = len(cx)
 except:
-    IJ.error("Verify parameters: No particles detected.")
-    raise Exception(Macro.MACRO_CANCELED)
+    raise RuntimeError("Verify parameters: No particles detected.")
 
 # Loop through particles' centroids and place each particle in a
 # dedicated list according to its distance to skeleton features
