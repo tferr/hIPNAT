@@ -30,7 +30,7 @@
 from ij import IJ, Macro
 from ij.measure import Measurements as M, ResultsTable
 from ij.plugin.frame import RoiManager
-from ij.plugin.filter import Analyzer, ParticleAnalyzer
+from ij.plugin.filter import ParticleAnalyzer as PA
 
 from ipnat.processing import Binary
 from sc.fiji.skeletonize3D import Skeletonize3D_
@@ -122,11 +122,13 @@ if rm is None:
     rm = RoiManager()
 rm.reset()
 
-# Retrieve centroids from ParticleAnalyzer. Ensure everything went as planned
-imp.deleteRoi()
-IJ.setThreshold(imp, threshold_lower, threshold_upper, "No Update")
-pa = ParticleAnalyzer(ParticleAnalyzer.ADD_TO_MANAGER, M.CENTROID, rt, size_min, size_max)
-pa.analyze(imp)
+# Retrieve centroids from IJ1 ParticleAnalyzer
+rt = ResultsTable()
+impPart.deleteRoi()
+IJ.setThreshold(impPart, threshold_lower, threshold_upper, "No Update")
+pa = PA(PA.ADD_TO_MANAGER, M.CENTROID, rt, size_min, size_max)
+pa.analyze(impPart)
+IJ.resetThreshold(impPart)
 try:
     cx = rt.getColumn(ResultsTable.X_CENTROID) #X_CENTER_OF_MASS
     cy = rt.getColumn(ResultsTable.Y_CENTROID) #Y_CENTER_OF_MASS
@@ -226,5 +228,3 @@ log("Size range: ", size_min, "-", size_max)
 if measure_rois:
     rm.runCommand(imp, "Deselect")
     rm.runCommand(imp, "Measure")
-
-IJ.resetThreshold(imp);
