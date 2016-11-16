@@ -36,7 +36,22 @@ from ipnat.processing import Binary
 from sc.fiji.skeletonize3D import Skeletonize3D_
 from sc.fiji.analyzeSkeleton import AnalyzeSkeleton_, SkeletonResult
 
+from net.imagej.table import DefaultGenericTable, GenericColumn
+
 import math, sys
+
+def addToTable(table, column_header, value):
+    """ Adds the specified value to the specifed column of an IJ table """
+    col_idx = table.getColumnIndex(column_header)
+    if col_idx == -1:
+        column = GenericColumn(column_header)
+        column.add(value)
+        table.add(column)
+    else:
+        column = table.get(col_idx)
+        column.add(value)
+        table.remove(col_idx)
+        table.add(col_idx, column)
 
 def distance(x1, y1, x2, y2):
      """ Calculates the distance between 2D points """
