@@ -8,6 +8,7 @@
 # @Double(label="Max. \"snap to\" distance", description="In calibrated units", min=1, max=1000, style="scroll bar", value=5) cutoff_dist
 # @Boolean(label="Measure particles", description="According to Analyze>Set Measurements...", value=false) measure_rois
 # @LogService ls
+# @UIService uiService
 
 """
     Classify_Particles_Using_Skeleton.py
@@ -30,11 +31,56 @@ from ij import IJ, Macro
 from ij.measure import Measurements as M, ResultsTable
 from ij.plugin.frame import RoiManager
 from ij.plugin.filter import Analyzer, ParticleAnalyzer
+
+from ipnat.processing import Binary
+from sc.fiji.skeletonize3D import Skeletonize3D_
 from sc.fiji.analyzeSkeleton import AnalyzeSkeleton_, SkeletonResult
+
 import math, sys
 
 def distance(x1, y1, x2, y2):
+     """ Calculates the distance between 2D points """
      return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+
+def error(msg):
+    """ Displays an error message """
+    uiService.showDialog(msg, "Error")
+
+def getRoiManager():
+    """ Returns an empty IJ1 ROI Manager """
+    from org.scijava.ui.DialogPrompt import MessageType, OptionType, Result
+    rm = RoiManager.getInstance()
+    if rm is None:
+        rm = RoiManager()
+    elif rm.getCount() > 0:
+        mt = MessageType.WARNING_MESSAGE
+        ot = OptionType.YES_NO_OPTION
+        result = uiService.showDialog("Clear All ROIs on the list?", "ROI Manager", mt, ot)
+        if result is Result.YES_OPTION:
+            rm.reset()
+        else:
+            rm = None
+    return rm
+
+def log(*arg):
+    """ Convenience log function """
+    ls.info("%s" % ''.join(map(str, arg)))
+
+def ratio(n, total):
+    """ Returns a readable frequency for the specified ratio """
+    return "0 (0.0%)" if total is 0 else (str(n) + " (" + str(round(float(n)/total*100, 3)) + "%)")
+
+def skeletonize(imp):
+    """ Skeletonizes the specified image """
+    thin = Skeletonize3D_()
+    thin.setup("", imp)
+    thin.run(None)
+    Binary.removeIsolatedPixels(imp)
+
+def pixel_size(imp):
+    """ Returns the smallest pixel length of the specified image """
+    cal = imp.getCalibration()
+    return min(cal.pixelWidth, cal.pixelHeight)
 
 # Retrieve list of skeleton landmarks (here, end/junction points)
 skel_analyzer = AnalyzeSkeleton_()
