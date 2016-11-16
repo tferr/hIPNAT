@@ -224,12 +224,7 @@ log("Size range: ", size_min, "-", size_max)
 
 # Our job is now done. We'll just measure tagged particles before exiting
 if measure_rois:
-    prev_measurements = Analyzer.getMeasurements()
-    measurements = (M.AREA + M.MEAN + M.FERET + M.LIMIT + M.INTEGRATED_DENSITY + M.LABELS)
-    Analyzer.setMeasurements(measurements)
-    ResultsTable.getResultsTable().reset()
     rm.runCommand(imp, "Deselect")
     rm.runCommand(imp, "Measure")
-    Analyzer.setMeasurements(prev_measurements) # Restore initial preferences
 
 IJ.resetThreshold(imp);
