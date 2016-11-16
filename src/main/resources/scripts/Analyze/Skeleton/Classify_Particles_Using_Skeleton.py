@@ -1,11 +1,12 @@
-# @ImagePlus(label="Particles image") imp
-# @Double(label="Lower threshold",value=900) threshold_lower
-# @Double(label="Upper threshold",value=65535) threshold_upper
-# @Double(label="Smallest particle size", description="In calibrated units", value=1.192) size_min
-# @Double(label="Largest particle size", description="In calibrated units", value=100) size_max
-# @ImagePlus(label="Skeleton image (8-bit)") impSkel
-# @Double(label="Max. \"Snap to\" distance", description="In calibrated units", value=5.090) cutoff_dist
-# @Boolean(label="Measure classified ROIs", value=false) measure_rois
+# @ImagePlus(label="Particles image") impPart
+# @Double(label="Lower threshold", min=1, max=80000, style="scroll bar", value=900) threshold_lower
+# @Double(label="Upper threshold", min=1, max=80000, style="scroll bar", value=65535) threshold_upper
+# @Double(label="Smallest particle size", description="In calibrated units", min=1, max=1000, style="scroll bar", value=1.5) size_min
+# @Double(label="Largest particle size", description="In calibrated units", min=1, max=1000, style="scroll bar", value=100) size_max
+# @String(value=" ", visibility="MESSAGE") spacer
+# @ImagePlus(label="Skeletonizable image", description="Must be 8-bit") impSkel
+# @Double(label="Max. \"snap to\" distance", description="In calibrated units", min=1, max=1000, style="scroll bar", value=5) cutoff_dist
+# @Boolean(label="Measure particles", description="According to Analyze>Set Measurements...", value=false) measure_rois
 # @LogService ls
 
 """
