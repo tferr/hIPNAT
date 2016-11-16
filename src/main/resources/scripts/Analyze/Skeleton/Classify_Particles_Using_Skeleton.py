@@ -85,6 +85,13 @@ def ratio(n, total):
     """ Returns a readable frequency for the specified ratio """
     return "0 (0.0%)" if total is 0 else (str(n) + " (" + str(round(float(n)/total*100, 3)) + "%)")
 
+def skeleton_properties(imp):
+    """ list of endpoints, junction points, and junction voxels from a skeleton """
+    skel_analyzer = AnalyzeSkeleton_()
+    skel_analyzer.setup("", imp)
+    skel_result = skel_analyzer.run()
+    return skel_result.getListOfEndPoints(), skel_result.getJunctions(), skel_result.getListOfJunctionVoxels()
+
 def skeletonize(imp):
     """ Skeletonizes the specified image """
     thin = Skeletonize3D_()
