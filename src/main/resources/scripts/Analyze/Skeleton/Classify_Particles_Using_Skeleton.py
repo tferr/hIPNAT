@@ -77,6 +77,16 @@ def getRoiManager():
             rm = None
     return rm
 
+def getCentroids(imp, lower_t, upper_t, min_size, max_size):
+    """ Returns centroids from the ParticleAnalyzer"""
+    rt = ResultsTable()
+    impPart.deleteRoi()
+    IJ.setThreshold(impPart, lower_t, upper_t, "No Update")
+    pa = PA(PA.ADD_TO_MANAGER, M.CENTROID, rt, min_size, max_size)
+    pa.analyze(impPart)
+    IJ.resetThreshold(impPart)
+    return rt.getColumn(ResultsTable.X_CENTROID), rt.getColumn(ResultsTable.Y_CENTROID)
+
 def log(*arg):
     """ Convenience log function """
     ls.info("%s" % ''.join(map(str, arg)))
@@ -121,26 +131,18 @@ def run():
     # For convenience we'll store particles in the ROI Manager
     rm = getRoiManager()
     if rm is None:
-        return;
+        return
 
     # Retrieve centroids from IJ1 ParticleAnalyzer
-    rt = ResultsTable()
-    impPart.deleteRoi()
-    IJ.setThreshold(impPart, threshold_lower, threshold_upper, "No Update")
-    pa = PA(PA.ADD_TO_MANAGER, M.CENTROID, rt, size_min, size_max)
-    pa.analyze(impPart)
-    IJ.resetThreshold(impPart)
-    try:
-        cx = rt.getColumn(ResultsTable.X_CENTROID)
-        cy = rt.getColumn(ResultsTable.Y_CENTROID)
-        n_particles = len(cx)
-    except:
+    cx, cy = getCentroids(impPart, threshold_lower, threshold_upper, size_min, size_max)
+    if not cx or not cy:
         error("Verify parameters: No particles detected.")
         return
 
     # Loop through particles' centroids and categorize each particle according
     # to its distance to skeleton features. The procedure is simple enough
     # that we can use traced ROIs directly
+    n_particles = len(cx)
     min_distance = pixel_size(impPart)
     n_bp = n_tip = n_none = n_both = 0
     for i in range(n_particles):
