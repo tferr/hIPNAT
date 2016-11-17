@@ -78,14 +78,19 @@ def getRoiManager():
     return rm
 
 def getCentroids(imp, lower_t, upper_t, min_size, max_size):
-    """ Returns centroids from the ParticleAnalyzer"""
-    rt = ResultsTable()
-    impPart.deleteRoi()
-    IJ.setThreshold(impPart, lower_t, upper_t, "No Update")
-    pa = PA(PA.ADD_TO_MANAGER, M.CENTROID, rt, min_size, max_size)
-    pa.analyze(impPart)
-    IJ.resetThreshold(impPart)
-    return rt.getColumn(ResultsTable.X_CENTROID), rt.getColumn(ResultsTable.Y_CENTROID)
+    """ Returns centroids from IJ1's ParticleAnalyzer. Detected
+        particles are added to the image overlay.
+     """
+    from ij import IJ
+    from ij.measure import ResultsTable as RT, Measurements as M
+    from ij.plugin.filter import ParticleAnalyzer as PA
+    rt = RT()
+    imp.deleteRoi()
+    IJ.setThreshold(imp, lower_t, upper_t, "No Update")
+    pa = PA(PA.SHOW_OVERLAY_MASKS, M.CENTROID, rt, min_size, max_size)
+    pa.analyze(imp)
+    IJ.resetThreshold(imp)
+    return rt.getColumn(RT.X_CENTROID), rt.getColumn(RT.Y_CENTROID)
 
 def log(*arg):
     """ Convenience log function """
@@ -128,14 +133,11 @@ def run():
         error(impSkel.getTitle() + " does not seem a valid skeleton.")
         return
 
-    # For convenience we'll store particles in the ROI Manager
-    rm = getRoiManager()
-    if rm is None:
-        return
-
-    # Retrieve centroids from IJ1 ParticleAnalyzer
+    # Retrieve centroids from IJ1 ParticleAnalyzer. For convenience
+    # we'll store particles (traced ROIs) in the image overlay
     cx, cy = getCentroids(impPart, threshold_lower, threshold_upper, size_min, size_max)
-    if not cx or not cy:
+    overlay = impPart.getOverlay()
+    if None in (cx, cy, overlay):
         error("Verify parameters: No particles detected.")
         return
 
@@ -184,18 +186,16 @@ def run():
             roi_color = Color.MAGENTA
             n_bp += 1
 
-        roi = rm.getRoi(i)
+        roi = overlay.get(i)
         roi.setName(roi_name)
         roi.setStrokeColor(roi_color)
 
     # Display result
-    rm.runCommand(impPart, "Show All")
-    rm.runCommand(impSkel, "Show All")
+    impSkel.setOverlay(overlay)
+    impPart.setOverlay(overlay)
 
     # Output some measurements
     if display_measurements:
-        rm.runCommand(impPart, "Deselect")
-        rm.runCommand(impPart, "Measure")
 
         t = DefaultGenericTable()
         t.appendRow(impPart.getTitle())
