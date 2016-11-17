@@ -143,7 +143,6 @@ def run():
     # to its distance to skeleton features. The procedure is simple enough
     # that we can use traced ROIs directly
     n_particles = len(cx)
-    min_distance = pixel_size(impPart)
     n_bp = n_tip = n_none = n_both = 0
     for i in range(n_particles):
 
@@ -170,7 +169,7 @@ def run():
             roi_name = "NoFeature:" + roi_id
             n_none += 1
         # Is particle associated with both?
-        elif abs(j_dist - ep_dist) <= min_distance:
+        elif abs(j_dist - ep_dist) <= pixel_size(impPart) / 2:
             roi_name = "JunctionAndTip:" + roi_id
             roi_color = Color.RED
             n_both += 1
