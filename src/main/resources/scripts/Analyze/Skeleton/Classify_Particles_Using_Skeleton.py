@@ -93,17 +93,17 @@ def log(*arg):
 
 def ratio(n, total):
     """ Returns a readable frequency for the specified ratio """
-    return "0 (0.0%)" if total is 0 else (str(n) + " (" + str(round(float(n)/total*100, 3)) + "%)")
+    return "0 (0.0%)" if total is 0 else "%d (%d%%)" % (n, round(float(n)/total*100, 3))
 
 def skeleton_properties(imp):
-    """ list of endpoints, junction points, and junction voxels from a skeleton """
+    """ Retrieves lists of endpoints, junction points, and junction voxels from a skeleton """
     skel_analyzer = AnalyzeSkeleton_()
     skel_analyzer.setup("", imp)
     skel_result = skel_analyzer.run()
     return skel_result.getListOfEndPoints(), skel_result.getJunctions(), skel_result.getListOfJunctionVoxels()
 
 def skeletonize(imp):
-    """ Skeletonizes the specified image """
+    """ Skeletonizes the specified image in situ """
     thin = Skeletonize3D_()
     thin.setup("", imp)
     thin.run(None)
@@ -206,7 +206,7 @@ def run():
         addToTable(t, "Unc. particles", ratio(n_none, n_particles))
         addToTable(t, "Junctions w/ particles", ratio(n_bp+n_both, sum(junctions)))
         addToTable(t, "Tips w/ particles", ratio(n_tip+n_both, len(end_points)))
-        addToTable(t, "Max 'snap-to' dist.", str(cutoff_dist) + impPart.getCalibration().getUnits())
+        addToTable(t, "'Snap-to' dist.", str(cutoff_dist) + impPart.getCalibration().getUnits())
         addToTable(t, "Threshold range", "%d-%d" % (threshold_lower, threshold_upper))
         addToTable(t, "Size range", "%d-%d" % (size_min, size_max))
         ij.ui().show("Skeleton Classified Particles", t)
