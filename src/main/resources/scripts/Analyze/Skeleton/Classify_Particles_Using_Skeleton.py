@@ -70,6 +70,16 @@ def getCentroids(imp, lower_t, upper_t, min_size, max_size):
     IJ.resetThreshold(imp)
     return rt.getColumn(RT.X_CENTROID), rt.getColumn(RT.Y_CENTROID)
 
+def measureOverlay(imp):
+    """ Measures all ROIs in an image overlay """
+    from ij.plugin.filter import Analyzer
+    overlay = imp.getOverlay()
+    if overlay:
+        analyzer = Analyzer(imp)
+        for roi in overlay.toArray():
+           imp.setRoi(roi)
+           analyzer.measure()
+           analyzer.displayResults()
 
 def ratio(n, total):
     """ Returns a readable frequency for the specified ratio """
@@ -121,6 +131,7 @@ def run():
     # that we can use traced ROIs directly
     n_particles = len(cx)
     n_bp = n_tip = n_none = n_both = 0
+
     for i in range(n_particles):
 
         j_dist = ep_dist = sys.maxint
@@ -171,6 +182,8 @@ def run():
 
     # Output some measurements
     if display_measurements:
+
+        measureOverlay(impPart)
 
         t = DefaultGenericTable()
         t.appendRow(impPart.getTitle())
