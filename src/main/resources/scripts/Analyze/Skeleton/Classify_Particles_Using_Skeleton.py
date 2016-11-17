@@ -163,7 +163,7 @@ def run():
 
         roi = overlay.get(i)
         roi.setName(roi_name)
-        roi.setStrokeColor(roi_color)
+        roi.setFillColor(roi_color)
 
     # Display result
     impSkel.setOverlay(overlay)
