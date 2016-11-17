@@ -1,7 +1,9 @@
 # @String(value="This script converts all .traces files in a directory into SWC. Conversion log will be displayed in Console.", visibility="MESSAGE") msg
 # @File(label="Directory of .traces files:", style="directory") input_dir
+# @Boolean(label="Open Console", value=false) open_console
 # @LogService log
 # @StatusService status
+# @UIService ui
 
 '''
 file:       Convert_Traces_to_SWC.py
@@ -18,6 +20,8 @@ def run():
     if not input_dir:
         return
     status.showStatus("Converting .traces files...")
+    if open_console:
+        ui.getDefaultUI().getConsolePane().show()
     conversion_counter = 0
     d = str(input_dir)
     log.info('Processing ' + d + '...')
