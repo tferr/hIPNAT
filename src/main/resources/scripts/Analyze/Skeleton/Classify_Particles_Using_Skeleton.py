@@ -26,17 +26,11 @@
     :license: GPL3, see LICENSE for more details
 """
 
-from ij import IJ
-from ij.measure import Measurements as M, ResultsTable
-from ij.plugin.frame import RoiManager
-from ij.plugin.filter import ParticleAnalyzer as PA
 
 from ipnat.processing import Binary
 from sc.fiji.skeletonize3D import Skeletonize3D_
 from sc.fiji.analyzeSkeleton import AnalyzeSkeleton_, SkeletonResult
-
 from net.imagej.table import DefaultGenericTable, GenericColumn
-
 from java.awt import Color
 import math, sys
 
@@ -61,22 +55,6 @@ def error(msg):
     """ Displays an error message """
     uiService.showDialog(msg, "Error")
 
-def getRoiManager():
-    """ Returns an empty IJ1 ROI Manager """
-    from org.scijava.ui.DialogPrompt import MessageType, OptionType, Result
-    rm = RoiManager.getInstance()
-    if rm is None:
-        rm = RoiManager()
-    elif rm.getCount() > 0:
-        mt = MessageType.WARNING_MESSAGE
-        ot = OptionType.YES_NO_OPTION
-        result = uiService.showDialog("Clear All ROIs on the list?", "ROI Manager", mt, ot)
-        if result is Result.YES_OPTION:
-            rm.reset()
-        else:
-            rm = None
-    return rm
-
 def getCentroids(imp, lower_t, upper_t, min_size, max_size):
     """ Returns centroids from IJ1's ParticleAnalyzer. Detected
         particles are added to the image overlay.
@@ -92,9 +70,6 @@ def getCentroids(imp, lower_t, upper_t, min_size, max_size):
     IJ.resetThreshold(imp)
     return rt.getColumn(RT.X_CENTROID), rt.getColumn(RT.Y_CENTROID)
 
-def log(*arg):
-    """ Convenience log function """
-    ls.info("%s" % ''.join(map(str, arg)))
 
 def ratio(n, total):
     """ Returns a readable frequency for the specified ratio """
