@@ -34,8 +34,8 @@ import java.util.Vector;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
-import fiji.Debug;
 import ij.IJ;
+import ij.ImageJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.WindowManager;
@@ -122,7 +122,14 @@ public class Strahler implements PlugIn, DialogListener {
 	 *            the arguments as specified in {@code plugins.config}
 	 */
 	public static void main(final String[] args) {
-		Debug.run("Strahler Analysis...", null);
+
+		// Debug.run("Strahler Analysis...", null);
+		new ImageJ(); // start ImageJ
+		final ImagePlus imp = new LSystemsTree().createTreeStack("DebugImp");
+		imp.setRoi(330, 510, 60, 50);
+		imp.show();
+		IJ.runPlugIn(imp, "ipnat.skel.Strahler", null);
+		WindowManager.addWindow(imp.getWindow());
 	}
 
 	/**
