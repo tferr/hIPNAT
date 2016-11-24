@@ -43,8 +43,8 @@ import sc.fiji.analyzeSkeleton.SkeletonResult;
  */
 public class SummarizeSkeleton implements PlugInFilter {
 
-	ImagePlus imp;
-	String TABLE_TITLE = "Skeleton Stats";
+	private ImagePlus imp;
+	private final String TABLE_TITLE = "Skeleton Stats";
 
 	@Override
 	public int setup(final String arg, final ImagePlus imp) {
@@ -54,7 +54,7 @@ public class SummarizeSkeleton implements PlugInFilter {
 			IJ.error("\"Summarize Skeleton\" requires Java 1.8 or later.");
 			return DONE;
 		} else if (!Utils.validSkelDependencies()
-				&& !Utils.classExists("org.apache.commons.math3.stat.StatUtils")) {
+				&& !Utils.classExists(org.apache.commons.math3.stat.StatUtils.class.getName())) {
 			return DONE;
 		} else
 			return DOES_8G | NO_CHANGES;
