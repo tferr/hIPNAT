@@ -75,28 +75,28 @@ public class Strahler implements PlugIn, DialogListener {
 	int maxOrder = 30;
 
 	/* Default option for loop detection */
-	int pruneChoice = AnalyzeSkeleton_.SHORTEST_BRANCH;
+	private int pruneChoice = AnalyzeSkeleton_.SHORTEST_BRANCH;
 
 	/* Default option for 'root-protection' ROI */
-	boolean protectRoot = true;
+	private boolean protectRoot = true;
 
 	/* Default option for 'iteration-stack' output */
-	boolean outIS = false;
+	private boolean outIS = false;
 
-	/* Default option for verbose mode */
+	private /* Default option for verbose mode */
 	boolean verbose = true;
 
 	/* Default option for tabular option */
-	boolean tabular = false;
+	private boolean tabular = false;
 
 	/* Remove isolated pixels from thinned images? */
-	boolean erodeIsolatedPixels = true;
+	private boolean erodeIsolatedPixels = true;
 
 	/* Title of main results window */
-	String STRAHLER_TABLE = "Strahler_Table";
+	private static final String STRAHLER_TABLE = "Strahler_Table";
 
 	/* Title of detailed results window */
-	String VERBOSE_TABLE = "Strahler_Iteration_Log";
+	private static final String VERBOSE_TABLE = "Strahler_Iteration_Log";
 
 	/*
 	 * Grayscale image for intensity-based pruning of skel. loops. While it is
@@ -480,7 +480,7 @@ public class Strahler implements PlugIn, DialogListener {
 	 * @param errorMsg
 	 *            the error message
 	 */
-	void error(final String errorMsg) {
+	private void error(final String errorMsg) {
 		Utils.error("Strahler Analysis", errorMsg, srcImp);
 	}
 
@@ -490,7 +490,7 @@ public class Strahler implements PlugIn, DialogListener {
 	 * @return {@code true} if the dialog input is valid and dialog was not
 	 *         dismissed.
 	 */
-	boolean getSettings() {
+	private boolean getSettings() {
 
 		final EnhancedGenericDialog gd = new EnhancedGenericDialog("Strahler Analysis :: " + IPNAT.getVersion());
 		final Font headerFont = new Font("SansSerif", Font.BOLD, 12);
@@ -576,12 +576,7 @@ public class Strahler implements PlugIn, DialogListener {
 
 	}
 
-	/*
-	 * Retrieve dialog options using the DialogListener interface
-	 *
-	 * @see ij.gui.DialogListener#dialogItemChanged(ij.gui.GenericDialog,
-	 * java.awt.AWTEvent)
-	 */
+	/* Retrieve dialog options using the DialogListener interface */
 	@Override
 	public boolean dialogItemChanged(final GenericDialog gd, final java.awt.AWTEvent e) {
 
@@ -664,7 +659,8 @@ public class Strahler implements PlugIn, DialogListener {
 	/* Paints point positions. */
 	void paintPoints(final ImageStack stack, final ArrayList<Point> points, final int value, final String sliceLabel) {
 		if (points != null) {
-			final ImageProcessor ipp = ip.createProcessor(stack.getWidth(), stack.getHeight());
+			final ImageProcessor ipp = stack.getProcessor(1).createProcessor(stack.getWidth(), stack.getHeight());
+					//ip.createProcessor(stack.getWidth(), stack.getHeight());
 			for (int j = 0; j < points.size(); j++) {
 				final Point point = points.get(j);
 				ipp.putPixel(point.x, point.y, value);
@@ -674,11 +670,11 @@ public class Strahler implements PlugIn, DialogListener {
 	}
 
 	/* Clears point positions */
-	void clearPoints(final ImageProcessor ip, final ArrayList<Point> points) {
+	private void clearPoints(final ImageProcessor processor, final ArrayList<Point> points) {
 		if (points != null) {
 			for (int j = 0; j < points.size(); j++) {
 				final Point point = points.get(j);
-				ip.putPixel(point.x, point.y, 0);
+				processor.putPixel(point.x, point.y, 0);
 			}
 		}
 	}
@@ -689,7 +685,7 @@ public class Strahler implements PlugIn, DialogListener {
 	 * point arbors. These 'debris' trees have 1 end-point but no branches or
 	 * junctions. If present they overestimate the total number of end-points
 	 */
-	void skeletonizeWithoutHermits(final ImagePlus imp) {
+	private void skeletonizeWithoutHermits(final ImagePlus imp) {
 		final Skeletonize3D_ thin = new Skeletonize3D_();
 		thin.setup("", imp);
 		thin.run(null);
@@ -708,7 +704,7 @@ public class Strahler implements PlugIn, DialogListener {
 	 * @param color
 	 *            Labels' foreground color as per {@link ij.plugin.Colors}
 	 **/
-	void addCalibrationBar(final ImagePlus imp, final int nLabels, final String color) {
+	private void addCalibrationBar(final ImagePlus imp, final int nLabels, final String color) {
 		final ImageCanvas ic = imp.getCanvas();
 		double zoom = (imp.getHeight() > 200) ? 1.0 : 0.8;
 		final double mag = (ic != null) ? ic.getMagnification() : 1.0;
