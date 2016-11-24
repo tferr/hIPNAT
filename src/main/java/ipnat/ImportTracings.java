@@ -34,8 +34,8 @@ import java.util.Vector;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
-import fiji.Debug;
 import ij.IJ;
+import ij.ImageJ;
 import ij.ImagePlus;
 import ij.Prefs;
 import ij.gui.DialogListener;
@@ -84,13 +84,11 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 	private final boolean guessOffsets = true;
 	private boolean tracesFile = false;
 
-	/**
-	 * Calls {@link fiji.Debug#runPlugIn(String, String, boolean)
-	 * fiji.Debug.runPlugIn()} so that the plugin can be debugged from an IDE
-	 */
-	public static void main(final String[] args) {
-		//Debug.runPlugIn("ipnat.ImportTracings", "", false);
-		IJ.runPlugIn("ipnat.ImportTracings", "");
+
+	/** Debugger method */
+	public static void main(String... args) {
+		new ImageJ();
+		IJ.runPlugIn(ImportTracings.class.getName(), null);
 	}
 
 	@Override
