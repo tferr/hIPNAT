@@ -97,9 +97,8 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 	private final boolean guessOffsets = true;
 	private boolean tracesFile = false;
 
-
 	/** Debugger method */
-	public static void main(String... args) {
+	public static void main(final String... args) {
 		new ImageJ();
 		IJ.runPlugIn(ImportTracings.class.getName(), null);
 	}
@@ -134,7 +133,7 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 					applyScale ? yScale : DEFAULT_SCALE, applyScale ? zScale : DEFAULT_SCALE, true);
 
 		} else if (chosenFile.getName().toLowerCase().endsWith(".traces")) {
-	
+
 			if (!getTracesRendingChoice())
 				return;
 			pathAndFillManager = PathAndFillManager.createFromTracesFile(chosenFile.getAbsolutePath());
@@ -143,7 +142,7 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 		}
 
 		if (pathAndFillManager == null || pathAndFillManager.size() == 0) {
-			Utils.error("Invalid File?", "Unable to load tracings from \n"+ chosenFile.getAbsolutePath(), null);
+			Utils.error("Invalid File?", "Unable to load tracings from \n" + chosenFile.getAbsolutePath(), null);
 			return;
 		}
 
@@ -319,16 +318,16 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 	private boolean getSWCsettingsFromUser() {
 		loadDialogSettings();
 		settingsDialog = new EnhancedGenericDialog(chosenFile.getName() + " Rendering");
-		settingsDialog.addCheckbox("Apply_calibration to SWC file coordinates:", !ignoreCalibration);
+		settingsDialog.addCheckbox("Apply_spatial calibration to SWC coordinates:", !ignoreCalibration);
 		settingsDialog.addNumericField("             Voxel_width", voxelWidth, 2);
 		settingsDialog.addNumericField("Voxel_height", voxelHeight, 2);
 		settingsDialog.addNumericField("Voxel_depth", voxelDepth, 2);
 		settingsDialog.addStringField("Unit", voxelUnit, 6);
-		settingsDialog.addCheckbox("Apply_offset to SWC file coordinates:", applyOffset);
+		settingsDialog.addCheckbox("Apply_offset to SWC coordinates:", applyOffset);
 		settingsDialog.addNumericField("X_offset", xOffset, 2);
 		settingsDialog.addNumericField("Y_offset", yOffset, 2);
 		settingsDialog.addNumericField("Z_offset", zOffset, 2);
-		settingsDialog.addCheckbox("Apply_scale to SWC file coordinates:", applyScale);
+		settingsDialog.addCheckbox("Apply_scale to SWC coordinates:", applyScale);
 		settingsDialog.addNumericField("X_scale", xScale, 2);
 		settingsDialog.addNumericField("Y_scale", yScale, 2);
 		settingsDialog.addNumericField("Z_scale", zScale, 2);
@@ -381,7 +380,7 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see ij.gui.DialogListener#dialogItemChanged(ij.gui.GenericDialog,
 	 * java.awt.AWTEvent)
 	 */
