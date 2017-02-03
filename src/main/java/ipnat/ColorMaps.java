@@ -211,7 +211,7 @@ public class ColorMaps {
 		}
 
 		// Set background color
-		if (backgroundGray > 0)
+		if (backgroundGray > -1)
 			reds[0] = greens[0] = blues[0] = (byte) backgroundGray;
 
 		return new IndexColorModel(8, 256, reds, greens, blues);
