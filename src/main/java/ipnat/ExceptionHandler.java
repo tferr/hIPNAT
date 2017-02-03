@@ -35,12 +35,12 @@ public class ExceptionHandler implements IJ.ExceptionHandler {
 	String METHOD_NOT_FOUND = "Your IJ installation is likeley outdated";
 	String UNNAMED_ERROR = "An error occured";
 	String TIPS = "Troubleshooting tips:\n"
-			+ "  - Ensure you are subscribed to the Fiji update site\n"
+			+ "  - Ensure you are subscribed to the Java-8 and Fiji update sites\n"
 			+ "  - Run the updater to install missing files or update deprecated ones\n"
 			+ "  - Useful resources:\n"
 			+ "    - http://imagej.net/Troubleshooting\n"
-			+ "    - http://forum.imagej.net/\n"
-			+ "    - http://imagej.net/Frequently_Asked_Questions";
+			+ "    - http://imagej.net/Frequently_Asked_Questions\n"
+			+ "    - http://forum.imagej.net/";
 
 	@Override
 	public void handle(final Throwable t) {
