@@ -29,6 +29,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.IndexColorModel;
 import java.io.File;
+import java.util.Arrays;
 import java.util.Vector;
 
 import javax.swing.JMenuItem;
@@ -227,54 +228,37 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 		if (univ == null) {
 			univ = new Image3DUniverse(width, height);
 		}
-		Color color = getSWCcolor(Path.SWC_UNDEFINED);
+
+		final Color[] colors = new Color[pathAndFillManager.size()];
+		switch (choice) {
+		case GRAY_3DVIEWER:
+		default:
+			Arrays.fill(colors, DEFAULT_DESELECTED_COLOR);
+			break;
+		case COLOR_3DVIEWER:
+			for (int i = 0; i < pathAndFillManager.size(); ++i) {
+				Color color = pathAndFillManager.getPath(i).getColor();
+				if (color == null)
+					color = pathAndFillManager.getPath(i).getSWCcolor();
+				colors[i] = color;
+			}
+			break;
+		case COLORMAP_3DVIEWER:
+			final IndexColorModel cm = ColorMaps.viridisColorMap(-1, false);
+			for (int i = 0; i < pathAndFillManager.size(); ++i) {
+				final int idx = 255 * i / pathAndFillManager.size();
+				colors[i] = new Color(cm.getRed(idx), cm.getGreen(idx), cm.getBlue(idx));
+			}
+			break;
+		}
+
 		for (int i = 0; i < pathAndFillManager.size(); ++i) {
 			final Path p = pathAndFillManager.getPath(i);
-			if (choice == COLOR_3DVIEWER)
-				color = tracesFile ? getSWCcolor(p.getName()) : getSWCcolor(p.getSWCType());
-			if (choice == COLORMAP_3DVIEWER)
-				color = getIndexColor(255 * i / pathAndFillManager.size());
-			p.addTo3DViewer(univ, color, colorImage);
+			p.addTo3DViewer(univ, colors[i], colorImage);
 		}
 		univ.show();
 		GUI.center(univ.getWindow());
-	}
 
-	private Color getIndexColor(int idx) {
-		IndexColorModel cm = ColorMaps.viridisColorMap(-1, false);
-		return new Color(cm.getRed(idx), cm.getGreen(idx), cm.getBlue(idx));
-	}
-
-	private Color getSWCcolor(final int swcType) {
-		switch (swcType) {
-		case Path.SWC_SOMA:
-			return Color.BLUE;
-		case Path.SWC_DENDRITE:
-			return Color.GREEN;
-		case Path.SWC_APICAL_DENDRITE:
-			return Color.CYAN;
-		case Path.SWC_AXON:
-			return Color.RED;
-		case Path.SWC_FORK_POINT:
-			return Color.MAGENTA;
-		case Path.SWC_END_POINT:
-			return Color.PINK;
-		case Path.SWC_CUSTOM:
-			return Color.YELLOW;
-		case Path.SWC_UNDEFINED:
-		default:
-			return Color.WHITE;
-		}
-	}
-
-	private Color getSWCcolor(String pathName) {
-		if (pathName == null)
-			return getSWCcolor(Path.SWC_UNDEFINED);
-		for (int i = 0; i < Path.swcTypeNames.length; i++) {
-			if (Path.swcTypeNames[i].toLowerCase().contains(pathName.toLowerCase()))
-				return getSWCcolor(i);
-		}
-		return getSWCcolor(Path.SWC_UNDEFINED);
 	}
 
 	/**
