@@ -1,4 +1,4 @@
-# @String(value="This script converts all .traces files in a directory into SWC. Conversion log will be displayed in Console.", visibility="MESSAGE") msg
+# @String(value="This script converts all .traces files in a directory into SWC. Conversion log will be shown in Console.", visibility="MESSAGE") msg
 # @File(label="Directory of .traces files:", style="directory") input_dir
 # @Boolean(label="Open Console", value=false) open_console
 # @LogService log
@@ -8,9 +8,9 @@
 '''
 file:       Convert_Traces_to_SWC.py
 author:     Mark Longair / Tiago Ferreira
-version:    20161027
+version:    20170203
 info:       Converts all .traces files in a directory into SWC.
-            Built from https://gist.github.com/mhl/888051
+            Based on https://gist.github.com/mhl/888051
 '''
 
 import os, re
@@ -24,8 +24,10 @@ def run():
         ui.getDefaultUI().getConsolePane().show()
     conversion_counter = 0
     d = str(input_dir)
-    log.info('Processing ' + d + '...')
+    log.info('Processing %s...' % d)
     for e in os.listdir(d):
+        if os.path.basename(e).startswith('.'):
+            continue
         if not e.endswith('.traces'):
             log.info('Skipping ' + e + '...')
             continue
