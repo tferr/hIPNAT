@@ -38,23 +38,29 @@ import javax.swing.JPopupMenu;
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.Prefs;
 import ij.gui.DialogListener;
 import ij.gui.GUI;
 import ij.gui.GenericDialog;
+import ij.gui.Overlay;
+import ij.gui.Roi;
 import ij.gui.YesNoCancelDialog;
 import ij.io.OpenDialog;
 import ij.measure.Calibration;
 import ij.plugin.PlugIn;
 import ij.plugin.frame.Recorder;
+import ij.plugin.frame.RoiManager;
 import ij.util.Tools;
 import ij3d.Image3DUniverse;
+import sc.fiji.analyzeSkeleton.AnalyzeSkeleton_;
 import sholl.gui.EnhancedGenericDialog;
+import stacks.ThreePanes;
 import tracing.Path;
 import tracing.PathAndFillManager;
 import tracing.SimpleNeuriteTracer;
 
-// TODO: implement other rending options: tagged skeleton, ClearVolume
+// TODO: implement other rending options: ClearVolume
 public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, DialogListener {
 
 	/* Default options for swc import */
@@ -68,12 +74,18 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 
 	private final String PREFS_KEY = "tracing.SWCImportOptionsDialog.";
 	private EnhancedGenericDialog settingsDialog;
-	private final String[] RENDING_OPTIONS = new String[] { "3D viewer (monochrome)", "3D viewer (colored by SWC type)",
-			"3D viewer (colored by path ID)", "Untagged skeleton" };
+	private final String[] RENDING_OPTIONS = new String[] { "3D paths (monochrome)",
+			"3D paths (STN/SWC-type colors)", "3D paths (colored by path ID)", "Untagged skeleton", "Tagged skeleton",
+			"2D ROIs (stored in ROI Manager)" };
+
+	/* These must match RENDING_OPTIONS indices */
 	private final int GRAY_3DVIEWER = 0;
 	private final int COLOR_3DVIEWER = 1;
 	private final int COLORMAP_3DVIEWER = 2;
 	private final int UNTAGGED_SKEL = 3;
+	private final int TAGGED_SKEL = 4;
+	private final int ROI_PATHS = 5;
+
 	private int rendingChoice = COLOR_3DVIEWER;
 
 	private double xOffset, yOffset, zOffset;
@@ -181,9 +193,19 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 
 			switch (rendingChoice) {
 			case UNTAGGED_SKEL:
-				final ImagePlus imp = makePathVolume();
-				imp.setTitle(chosenFile.getName());
-				imp.show();
+				renderPathVolume(false).show();
+				break;
+			case TAGGED_SKEL:
+				renderPathVolume(true).show();
+				break;
+			case ROI_PATHS:
+				final Overlay overlay = new Overlay();
+				addPathsToOverlay(overlay, ThreePanes.XY_PLANE, true);
+				RoiManager rm = RoiManager.getInstance2();
+				if (rm == null)
+					rm = new RoiManager();
+				for (final Roi path : overlay.toArray())
+					rm.addRoi(path);
 				break;
 			case GRAY_3DVIEWER:
 			case COLOR_3DVIEWER:
@@ -221,6 +243,26 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 
 		}
 
+	}
+
+	private ImagePlus renderPathVolume(final boolean taggedSkeleton) {
+		ImagePlus imp;
+		final String impTitle = chosenFile.getName();
+		if (taggedSkeleton) {
+			final AnalyzeSkeleton_ as = new AnalyzeSkeleton_();
+			as.setup("", makePathVolume());
+			as.run();
+			final ImageStack stack = as.getResultImage(false);
+			imp = new ImagePlus(impTitle, stack);
+			// ColorMaps.applyMagmaColorMap(imp, 0, false);
+			IJ.run(imp, "Fire", null); // Mimic AnalyzeSkeleton_'s default
+			imp.resetDisplayRange();
+			imp.updateAndDraw();
+		} else {
+			imp = makePathVolume();
+			imp.setTitle(impTitle);
+		}
+		return imp;
 	}
 
 	private synchronized void renderPathsIn3DViewer(final int choice) {
