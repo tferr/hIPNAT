@@ -89,6 +89,7 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 	private int rendingChoice = COLOR_3DVIEWER;
 
 	private double xOffset, yOffset, zOffset;
+	private double xOffsetGuessed, yOffsetGuessed, zOffsetGuessed;
 	private double xScale, yScale, zScale;
 	private boolean applyOffset, applyScale, ignoreCalibration;
 	private double voxelWidth, voxelHeight, voxelDepth;
@@ -146,48 +147,6 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 			return;
 		}
 
-		// Calculate smallest dimensions of stack holding the rendering of paths
-		// and suggest users with suitable offsets in case input was not
-		// suitable
-		int cropped_canvas_x = 1;
-		int cropped_canvas_y = 1;
-		int cropped_canvas_z = 1;
-		int x_guessed_offset = 0;
-		int y_guessed_offset = 0;
-		int z_guessed_offset = 0;
-		for (int i = 0; i < pathAndFillManager.size(); ++i) {
-			final Path p = pathAndFillManager.getPath(i);
-			for (int j = 0; j < p.size(); ++j) {
-				cropped_canvas_x = Math.max(cropped_canvas_x, p.getXUnscaled(j));
-				cropped_canvas_y = Math.max(cropped_canvas_y, p.getYUnscaled(j));
-				cropped_canvas_z = Math.max(cropped_canvas_z, p.getZUnscaled(j));
-				if (guessOffsets) {
-					x_guessed_offset = Math.min(x_guessed_offset, p.getXUnscaled(j));
-					y_guessed_offset = Math.min(y_guessed_offset, p.getYUnscaled(j));
-					z_guessed_offset = Math.min(z_guessed_offset, p.getZUnscaled(j));
-				}
-
-			}
-		}
-
-		// Padding" is essential to accommodate for "rounding"
-		// errors in PathAndFillManager.setPathPointsInVolume()
-		width = cropped_canvas_x + 10;
-		height = cropped_canvas_y + 10;
-		depth = (cropped_canvas_z == 1) ? 1 : cropped_canvas_z + 2;
-
-		// Define spatial calibration of stack. We must initialize
-		// stacks.ThreePanes.xy to avoid a NPE later on, because
-		// tracing.SimpleNeuriteTracer.makePathVolume() inherits
-		// stacks.ThreePanes.xy's calibration
-		final Calibration cal = new Calibration();
-		cal.setUnit(tracesFile ? spacing_units : voxelUnit);
-		cal.pixelWidth = tracesFile ? x_spacing : voxelWidth;
-		cal.pixelHeight = tracesFile ? y_spacing : voxelHeight;
-		cal.pixelDepth = tracesFile ? z_spacing : voxelDepth;
-		xy = new ImagePlus();
-		xy.setCalibration(cal);
-
 		try {
 
 			switch (rendingChoice) {
@@ -229,9 +188,9 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 							"Re-try with guessed (presumably more suitable) settings?").yesPressed()) {
 				applyScale = false;
 				applyOffset = true;
-				xOffset = (x_guessed_offset == 0d) ? 0d : x_guessed_offset * -1.05;
-				yOffset = (y_guessed_offset == 0d) ? 0d : y_guessed_offset * -1.05;
-				zOffset = (z_guessed_offset == 0d) ? 0d : z_guessed_offset * -1.05;
+				xOffset = (xOffsetGuessed == 0d) ? 0d : xOffsetGuessed * -1.05;
+				yOffset = (yOffsetGuessed == 0d) ? 0d : yOffsetGuessed * -1.05;
+				zOffset = (zOffsetGuessed == 0d) ? 0d : zOffsetGuessed * -1.05;
 				saveSWCSettings();
 				if (Recorder.record) {
 					Recorder.setCommand(Recorder.getCommand());
@@ -245,6 +204,47 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 	}
 
 	private ImagePlus renderPathVolume(final boolean taggedSkeleton) {
+	private void initializeTracingCanvas() {
+		// Calculate smallest dimensions of stack holding the rendering of paths
+		// and suggest users with suitable offsets in case input was not
+		// suitable
+		int cropped_canvas_x = 1;
+		int cropped_canvas_y = 1;
+		int cropped_canvas_z = 1;
+		for (int i = 0; i < pathAndFillManager.size(); ++i) {
+			final Path p = pathAndFillManager.getPath(i);
+			for (int j = 0; j < p.size(); ++j) {
+				cropped_canvas_x = Math.max(cropped_canvas_x, p.getXUnscaled(j));
+				cropped_canvas_y = Math.max(cropped_canvas_y, p.getYUnscaled(j));
+				cropped_canvas_z = Math.max(cropped_canvas_z, p.getZUnscaled(j));
+				if (guessOffsets) {
+					xOffsetGuessed = Math.min(xOffsetGuessed, p.getXUnscaled(j));
+					yOffsetGuessed = Math.min(yOffsetGuessed, p.getYUnscaled(j));
+					zOffsetGuessed = Math.min(zOffsetGuessed, p.getZUnscaled(j));
+				}
+
+			}
+		}
+
+		// Padding" is essential to accommodate for "rounding"
+		// errors in PathAndFillManager.setPathPointsInVolume()
+		width = cropped_canvas_x + 10;
+		height = cropped_canvas_y + 10;
+		depth = (cropped_canvas_z == 1) ? 1 : cropped_canvas_z + 2;
+
+		// Define spatial calibration of stack. We must initialize
+		// stacks.ThreePanes.xy to avoid a NPE later on, because
+		// tracing.SimpleNeuriteTracer.makePathVolume() inherits
+		// stacks.ThreePanes.xy's calibration
+		final Calibration cal = new Calibration();
+		cal.setUnit(tracesFile ? spacing_units : voxelUnit);
+		cal.pixelWidth = tracesFile ? x_spacing : voxelWidth;
+		cal.pixelHeight = tracesFile ? y_spacing : voxelHeight;
+		cal.pixelDepth = tracesFile ? z_spacing : voxelDepth;
+		xy = new ImagePlus();
+		xy.setCalibration(cal);
+	}
+
 		ImagePlus imp;
 		final String impTitle = chosenFile.getName();
 		if (taggedSkeleton) {
