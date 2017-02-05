@@ -75,17 +75,17 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 
 	private final String PREFS_KEY = "tracing.SWCImportOptionsDialog.";
 	private EnhancedGenericDialog settingsDialog;
-	private final String[] RENDING_OPTIONS = new String[] { "3D paths (monochrome)",
-			"3D paths (STN/SWC-type colors)", "3D paths (colored by path ID)", "Untagged skeleton", "Tagged skeleton",
+	private final String[] RENDING_OPTIONS = new String[] { "3D paths (monochrome)", "3D paths (STN/SWC-type colors)",
+			"3D paths (colored by path ID)", "Untagged skeleton", "Tagged skeleton",
 			"2D ROIs (stored in ROI Manager)" };
 
 	/* These must match RENDING_OPTIONS indices */
-	private final int GRAY_3DVIEWER = 0;
-	private final int COLOR_3DVIEWER = 1;
-	private final int COLORMAP_3DVIEWER = 2;
-	private final int UNTAGGED_SKEL = 3;
-	private final int TAGGED_SKEL = 4;
-	private final int ROI_PATHS = 5;
+	public static final int GRAY_3DVIEWER = 0;
+	public static final int COLOR_3DVIEWER = 1;
+	public static final int COLORMAP_3DVIEWER = 2;
+	public static final int UNTAGGED_SKEL = 3;
+	public static final int TAGGED_SKEL = 4;
+	public static final int ROI_PATHS = 5;
 
 	private int rendingChoice = COLOR_3DVIEWER;
 
@@ -98,6 +98,7 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 	private File chosenFile;
 	private final boolean guessOffsets = true;
 	private boolean tracesFile = false;
+	private boolean reuseViewer;
 
 	/** Debugger method */
 	public static void main(final String... args) {
@@ -117,29 +118,18 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 			chosenFile = new File(directory, fileName);
 		}
 
-		final String filename = chosenFile.getName().toLowerCase();
-		if (filename.endsWith(".swc") || filename.endsWith(".eswc")) {
+		if (isSWCfile(chosenFile.getName())) {
 
-			// Allow any type of paths in PathAndFillManager by exaggerating its
-			// dimensions. We'll set x,y,z spacing to 1 w/o spatial calibration
-			pathAndFillManager = new PathAndFillManager(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, 1f, 1f,
-					1f, null);
-
-			// Retrieve import options from user and load paths from file
 			if (!getSWCsettingsFromUser())
 				return;
 			saveSWCSettings();
-			pathAndFillManager.importSWC(chosenFile.getAbsolutePath(), ignoreCalibration,
-					applyOffset ? xOffset : DEFAULT_OFFSET, applyOffset ? yOffset : DEFAULT_OFFSET,
-					applyOffset ? zOffset : DEFAULT_OFFSET, applyScale ? xScale : DEFAULT_SCALE,
-					applyScale ? yScale : DEFAULT_SCALE, applyScale ? zScale : DEFAULT_SCALE, true);
+			loadSWCfile(chosenFile.getAbsolutePath());
 
-		} else if (chosenFile.getName().toLowerCase().endsWith(".traces")) {
+		} else if (isTracesfile(chosenFile.getName())) {
 
 			if (!getTracesRendingChoice())
 				return;
-			pathAndFillManager = PathAndFillManager.createFromTracesFile(chosenFile.getAbsolutePath());
-			tracesFile = true;
+			loadTRACESfile(chosenFile.getAbsolutePath());
 
 		}
 
@@ -152,15 +142,16 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 
 			switch (rendingChoice) {
 			case UNTAGGED_SKEL:
-				renderPathVolume(false).show();
-				break;
 			case TAGGED_SKEL:
-				renderPathVolume(true).show();
+				final String impTitle = chosenFile.getName();
+				final ImagePlus imp = renderPathVolume(rendingChoice == TAGGED_SKEL);
+				imp.setTitle(impTitle);
+				imp.show();
 				break;
 			case ROI_PATHS:
 				final Overlay overlay = new Overlay();
 				addPathsToOverlay(overlay, ThreePanes.XY_PLANE, true);
-				RoiManager rm = RoiManager.getInstance2();
+				RoiManager rm = RoiManager.getInstance();
 				if (rm == null)
 					rm = new RoiManager();
 				for (final Roi path : overlay.toArray())
@@ -169,7 +160,7 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 			case GRAY_3DVIEWER:
 			case COLOR_3DVIEWER:
 			case COLORMAP_3DVIEWER:
-				renderPathsIn3DViewer(rendingChoice);
+				renderPathsIn3DViewer(rendingChoice, reuseViewer);
 				break;
 			default:
 				IJ.log("Bug: Unknown option...");
@@ -204,7 +195,6 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 
 	}
 
-	private ImagePlus renderPathVolume(final boolean taggedSkeleton) {
 	public boolean isSWCfile(final String filename) {
 		return filename.toLowerCase().matches(".*\\.e?swc"); // .swc and .eswc
 																// extensions
@@ -304,30 +294,42 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 		xy.setCalibration(cal);
 	}
 
+	public ImagePlus renderPathVolume(final boolean taggedSkeleton) {
 		ImagePlus imp;
-		final String impTitle = chosenFile.getName();
+		initializeTracingCanvas();
 		if (taggedSkeleton) {
 			final AnalyzeSkeleton_ as = new AnalyzeSkeleton_();
 			as.setup("", makePathVolume());
 			as.run();
 			final ImageStack stack = as.getResultImage(false);
-			imp = new ImagePlus(impTitle, stack);
+			imp = new ImagePlus("", stack);
 			// ColorMaps.applyMagmaColorMap(imp, 0, false);
 			IJ.run(imp, "Fire", null); // Mimic AnalyzeSkeleton_'s default
 			imp.resetDisplayRange();
 			imp.updateAndDraw();
 		} else {
 			imp = makePathVolume();
-			imp.setTitle(impTitle);
 		}
 		return imp;
 	}
 
-	private synchronized void renderPathsIn3DViewer(final int choice) {
-		univ = get3DUniverse();
-		if (univ == null) {
-			univ = new Image3DUniverse(width, height);
+	private synchronized void renderPathsIn3DViewer(final int choice, final boolean reuseLastViewer) {
+		final int nViewers = Image3DUniverse.universes.size();
+		boolean reusingViewer = false;
+		if (reuseLastViewer && nViewers > 0) {
+			univ = Image3DUniverse.universes.get(nViewers - 1);
+			reusingViewer = univ != null;
 		}
+		if (!reusingViewer) {
+			univ = getNewUniverse();
+		}
+		renderPathsIn3DViewer(choice, univ);
+		if (!reusingViewer) {
+			univ.show();
+			GUI.center(univ.getWindow());
+		}
+
+	}
 
 	public Image3DUniverse getNewUniverse() {
 		final Image3DUniverse univ = new Image3DUniverse(512, 512);
@@ -339,6 +341,10 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 		return univ;
 	}
 
+	public synchronized void renderPathsIn3DViewer(final int choice, final Image3DUniverse univ) {
+
+		use3DViewer = true;
+		this.univ = univ;
 		final Color[] colors = new Color[pathAndFillManager.size()];
 		switch (choice) {
 		case GRAY_3DVIEWER:
@@ -366,8 +372,6 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 			final Path p = pathAndFillManager.getPath(i);
 			p.addTo3DViewer(univ, colors[i], colorImage);
 		}
-		univ.show();
-		GUI.center(univ.getWindow());
 
 	}
 
@@ -402,6 +406,7 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 		settingsDialog.addNumericField("Z_scale", zScale, 2);
 		settingsDialog.addMessage(""); // spacer
 		settingsDialog.addChoice("Render as:", RENDING_OPTIONS, RENDING_OPTIONS[rendingChoice]);
+		settingsDialog.addCheckbox("3D rendering: Re-use existing viewer (if any)", reuseViewer);
 
 		// Add listener anf update prompt
 		settingsDialog.addDialogListener(this);
@@ -436,10 +441,11 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 	private boolean getTracesRendingChoice() {
 		settingsDialog = new EnhancedGenericDialog(chosenFile.getName() + " Rendering");
 		settingsDialog.addChoice("Render as:", RENDING_OPTIONS, RENDING_OPTIONS[rendingChoice]);
+		settingsDialog.addCheckbox("3D rendering: Re-use existing viewer (if any)", reuseViewer);
 		settingsDialog.assignListenerToHelpButton("About hIPNAT", new ActionListener() {
 			@Override
 			public void actionPerformed(final ActionEvent e) {
-				IJ.runPlugIn("ipnat.Help", "");
+				IJ.runPlugIn(Help.class.getName(), "");
 			}
 		});
 		settingsDialog.showDialog();
@@ -457,7 +463,7 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 	public boolean dialogItemChanged(final GenericDialog gd, final AWTEvent e) {
 
 		if (e != null && e.toString().contains("About")) {
-			IJ.runPlugIn("ipnat.Help", "");
+			IJ.runPlugIn(ipnat.Help.class.getName(), "");
 			return true;
 		} else if (e != null && e.toString().contains("Restore")) {
 			resetSWCpreferences();
@@ -499,6 +505,7 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 		zScale = Math.max(0.01, settingsDialog.getNextNumber());
 
 		rendingChoice = settingsDialog.getNextChoiceIndex();
+		reuseViewer = settingsDialog.getNextBoolean();
 	}
 
 	private void resetSWCpreferences() {
