@@ -58,6 +58,7 @@ import sholl.gui.EnhancedGenericDialog;
 import stacks.ThreePanes;
 import tracing.Path;
 import tracing.PathAndFillManager;
+import tracing.PointSelectionBehavior;
 import tracing.SimpleNeuriteTracer;
 
 // TODO: implement other rending options: ClearVolume
@@ -204,6 +205,64 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 	}
 
 	private ImagePlus renderPathVolume(final boolean taggedSkeleton) {
+	public boolean isSWCfile(final String filename) {
+		return filename.toLowerCase().matches(".*\\.e?swc"); // .swc and .eswc
+																// extensions
+	}
+
+	public boolean isTracesfile(final String filename) {
+		return filename.toLowerCase().endsWith(".traces");
+	}
+
+	public void applyScalingFactor(final double xScale, final double yScale, final double zScale) {
+		applyScale = true;
+		this.xScale = xScale;
+		this.yScale = yScale;
+		this.zScale = zScale;
+	}
+
+	public void applyOffset(final double xOffset, final double yOffset, final double zOffset) {
+		applyOffset = true;
+		this.xOffset = xOffset;
+		this.yOffset = yOffset;
+		this.zOffset = zOffset;
+	}
+
+	public void applyCalibration(final double voxelWidth, final double voxelHeight, final double voxelDepth,
+			final String voxelUnit) {
+		ignoreCalibration = false;
+		this.voxelWidth = voxelWidth;
+		this.voxelHeight = voxelHeight;
+		this.voxelDepth = voxelDepth;
+		this.voxelUnit = voxelUnit;
+	}
+
+	private void loadSWCfile(final String filename) {
+		// Allow any type of paths in PathAndFillManager by exaggerating its
+		// dimensions. We'll set x,y,z spacing to 1 w/o spatial calibration
+		pathAndFillManager = new PathAndFillManager(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, 1f, 1f, 1f,
+				null);
+		pathAndFillManager.importSWC(filename, ignoreCalibration, applyOffset ? xOffset : DEFAULT_OFFSET,
+				applyOffset ? yOffset : DEFAULT_OFFSET, applyOffset ? zOffset : DEFAULT_OFFSET,
+				applyScale ? xScale : DEFAULT_SCALE, applyScale ? yScale : DEFAULT_SCALE,
+				applyScale ? zScale : DEFAULT_SCALE, true);
+	}
+
+	private void loadTRACESfile(final String filename) {
+		pathAndFillManager = PathAndFillManager.createFromTracesFile(chosenFile.getAbsolutePath());
+		tracesFile = true;
+	}
+
+	public void loadPathAndFillManager(final String filename) {
+		if (isSWCfile(filename)) {
+			loadSWCfile(filename);
+		} else if (isTracesfile(filename)) {
+			loadTRACESfile(filename);
+		} else {
+			throw new IllegalArgumentException("Cannot load " + filename);
+		}
+	}
+
 	private void initializeTracingCanvas() {
 		// Calculate smallest dimensions of stack holding the rendering of paths
 		// and suggest users with suitable offsets in case input was not
@@ -269,6 +328,16 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 		if (univ == null) {
 			univ = new Image3DUniverse(width, height);
 		}
+
+	public Image3DUniverse getNewUniverse() {
+		final Image3DUniverse univ = new Image3DUniverse(512, 512);
+		univ.setUseToFront(false);
+		// univ.addUniverseListener(pathAndFillManager);
+		// univ.setAutoAdjustView(false);
+		final PointSelectionBehavior psb = new PointSelectionBehavior(univ, this);
+		univ.addInteractiveBehavior(psb);
+		return univ;
+	}
 
 		final Color[] colors = new Color[pathAndFillManager.size()];
 		switch (choice) {
