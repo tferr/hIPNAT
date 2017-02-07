@@ -63,6 +63,12 @@ import tracing.PointSelectionBehavior;
 import tracing.SimpleNeuriteTracer;
 
 // TODO: implement other rending options: ClearVolume
+/**
+ * Allows SWC/TRACES files to be imported in ImageJ without a priori knowledge
+ * of the original image from which tracings were obtained. In cases in which
+ * the image is available, it is preferable to script
+ * {@link PathAndFillManager} directly.
+ */
 public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, DialogListener {
 
 	/* Default options for swc import */
@@ -233,6 +239,16 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 		loadSWCfile(filename, true);
 	}
 
+	/**
+	 * Loads a SWC file.
+	 *
+	 * @param filename
+	 *            the absolute path to the file to be loaded
+	 * @param replaceAllPaths
+	 *            if {@code true} any existing paths in the
+	 *            {@link PathAndFillManager} instance will be replaced by the
+	 *            loaded ones.
+	 */
 	public void loadSWCfile(final String filename, final boolean replaceAllPaths) {
 		// Allow any type of paths in PathAndFillManager by exaggerating its
 		// dimensions. We'll set x,y,z spacing to 1 w/o spatial calibration

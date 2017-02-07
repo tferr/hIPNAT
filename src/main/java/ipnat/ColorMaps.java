@@ -47,6 +47,8 @@ public class ColorMaps {
 	 * @param backgroundGray
 	 *            The gray value (8-bit scale) to be used as the first entry of
 	 *            the LUT. It is ignored if negative.
+	 * @param inverted
+	 *            If the LUT should be inverted
 	 */
 	public static void applyViridisColorMap(final ImagePlus imp, final int backgroundGray, final boolean inverted) {
 		applyLut(imp, viridisColorMap(backgroundGray, inverted));
@@ -70,6 +72,8 @@ public class ColorMaps {
 	 * @param backgroundGray
 	 *            The gray value (8-bit scale) to be used as the first entry of
 	 *            the LUT. It is ignored if negative.
+	 * @param inverted
+	 *            If the LUT should be inverted
 	 */
 	public static void applyMagmaColorMap(final ImagePlus imp, final int backgroundGray, final boolean inverted) {
 		applyLut(imp, plasmaColorMap(backgroundGray, inverted));
@@ -93,6 +97,8 @@ public class ColorMaps {
 	 * @param backgroundGray
 	 *            the positive gray value (8-bit scale) to be used as the first
 	 *            entry of the LUT. It is ignored if negative.
+	 * @param inverted
+	 *            If the LUT should be inverted
 	 * @return The "viridis" LUT with the specified background entry
 	 */
 	public static IndexColorModel viridisColorMap(final int backgroundGray, final boolean inverted) {
@@ -158,6 +164,8 @@ public class ColorMaps {
 	 * @param backgroundGray
 	 *            the positive gray value (8-bit scale) to be used as the first
 	 *            entry of the LUT. It is ignored if negative.
+	 * @param inverted
+	 *            If the LUT should be inverted
 	 * @return The "plasma" LUT with the specified background entry
 	 */
 	public static IndexColorModel plasmaColorMap(final int backgroundGray, final boolean inverted) {
