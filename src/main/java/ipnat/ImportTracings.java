@@ -29,7 +29,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.IndexColorModel;
 import java.io.File;
-import java.util.Arrays;
 import java.util.Vector;
 
 import javax.swing.JMenuItem;
@@ -49,8 +48,10 @@ import ij.gui.YesNoCancelDialog;
 import ij.io.OpenDialog;
 import ij.measure.Calibration;
 import ij.plugin.PlugIn;
+import ij.plugin.ZProjector;
 import ij.plugin.frame.Recorder;
 import ij.plugin.frame.RoiManager;
+import ij.process.ImageProcessor;
 import ij.util.Tools;
 import ij3d.Image3DUniverse;
 import sc.fiji.analyzeSkeleton.AnalyzeSkeleton_;
@@ -75,17 +76,18 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 
 	private final String PREFS_KEY = "tracing.SWCImportOptionsDialog.";
 	private EnhancedGenericDialog settingsDialog;
-	private final String[] RENDING_OPTIONS = new String[] { "3D paths (monochrome)", "3D paths (STN/SWC-type colors)",
-			"3D paths (colored by path ID)", "Untagged skeleton", "Tagged skeleton",
-			"2D ROIs (stored in ROI Manager)" };
 
-	/* These must match RENDING_OPTIONS indices */
 	public static final int GRAY_3DVIEWER = 0;
 	public static final int COLOR_3DVIEWER = 1;
 	public static final int COLORMAP_3DVIEWER = 2;
 	public static final int UNTAGGED_SKEL = 3;
 	public static final int TAGGED_SKEL = 4;
 	public static final int ROI_PATHS = 5;
+
+	/** These labels must match the indices of the options above **/
+	private final String[] RENDING_OPTIONS = new String[] { "3D paths (monochrome)", "3D paths (STN/SWC-type colors)",
+			"3D paths (colored by path ID)", "Untagged skeleton", "Tagged skeleton",
+			"2D ROIs (stored in ROI Manager)" };
 
 	private int rendingChoice = COLOR_3DVIEWER;
 
@@ -228,14 +230,20 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 	}
 
 	private void loadSWCfile(final String filename) {
+		loadSWCfile(filename, true);
+	}
+
+	public void loadSWCfile(final String filename, final boolean replaceAllPaths) {
 		// Allow any type of paths in PathAndFillManager by exaggerating its
 		// dimensions. We'll set x,y,z spacing to 1 w/o spatial calibration
-		pathAndFillManager = new PathAndFillManager(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, 1f, 1f, 1f,
-				null);
+		if (pathAndFillManager == null) {
+			pathAndFillManager = new PathAndFillManager(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, 1f, 1f,
+					1f, null);
+		}
 		pathAndFillManager.importSWC(filename, ignoreCalibration, applyOffset ? xOffset : DEFAULT_OFFSET,
 				applyOffset ? yOffset : DEFAULT_OFFSET, applyOffset ? zOffset : DEFAULT_OFFSET,
 				applyScale ? xScale : DEFAULT_SCALE, applyScale ? yScale : DEFAULT_SCALE,
-				applyScale ? zScale : DEFAULT_SCALE, true);
+				applyScale ? zScale : DEFAULT_SCALE, replaceAllPaths);
 	}
 
 	private void loadTRACESfile(final String filename) {
@@ -251,6 +259,18 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 		} else {
 			throw new IllegalArgumentException("Cannot load " + filename);
 		}
+	}
+
+	@Override
+	public PathAndFillManager getPathAndFillManager() {
+		return pathAndFillManager;
+	}
+
+	public ImagePlus getTracingCanvas() {
+		if (pathAndFillManager == null || pathAndFillManager.size() == 0)
+			throw new RuntimeException("getTracingCanvas() was called before successfully loading PathAndFillManager");
+		initializeTracingCanvas();
+		return xy;
 	}
 
 	private void initializeTracingCanvas() {
@@ -286,10 +306,17 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 		// tracing.SimpleNeuriteTracer.makePathVolume() inherits
 		// stacks.ThreePanes.xy's calibration
 		final Calibration cal = new Calibration();
-		cal.setUnit(tracesFile ? spacing_units : voxelUnit);
-		cal.pixelWidth = tracesFile ? x_spacing : voxelWidth;
-		cal.pixelHeight = tracesFile ? y_spacing : voxelHeight;
-		cal.pixelDepth = tracesFile ? z_spacing : voxelDepth;
+		if (tracesFile) {
+			cal.setUnit(spacing_units);
+			cal.pixelWidth = x_spacing;
+			cal.pixelHeight = y_spacing;
+			cal.pixelDepth = z_spacing;
+		} else if (spacing_units != null && !spacing_units.isEmpty()) {
+			cal.setUnit(spacing_units);
+			cal.pixelWidth = voxelWidth;
+			cal.pixelHeight = voxelHeight;
+			cal.pixelDepth = voxelHeight;
+		}
 		xy = new ImagePlus();
 		xy.setCalibration(cal);
 	}
@@ -313,6 +340,17 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 		return imp;
 	}
 
+	public ImageProcessor getRenderedProjection() {
+		initializeTracingCanvas();
+		final ImagePlus imp = makePathVolume();
+		final ZProjector zp = new ZProjector(imp);
+		zp.setMethod(ZProjector.MAX_METHOD);
+		zp.setStartSlice(1);
+		zp.setStopSlice(imp.getNSlices());
+		zp.doProjection();
+		return zp.getProjection().getProcessor();
+	}
+
 	private synchronized void renderPathsIn3DViewer(final int choice, final boolean reuseLastViewer) {
 		final int nViewers = Image3DUniverse.universes.size();
 		boolean reusingViewer = false;
@@ -322,6 +360,13 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 		}
 		if (!reusingViewer) {
 			univ = getNewUniverse();
+		}
+		switch (choice) {
+		case GRAY_3DVIEWER:
+			renderPathsIn3DViewer(DEFAULT_DESELECTED_COLOR, univ);
+			break;
+		case COLOR_3DVIEWER:
+			renderPathsIn3DViewer(DEFAULT_DESELECTED_COLOR, univ);
 		}
 		renderPathsIn3DViewer(choice, univ);
 		if (!reusingViewer) {
@@ -341,31 +386,38 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 		return univ;
 	}
 
-	public synchronized void renderPathsIn3DViewer(final int choice, final Image3DUniverse univ) {
-
+	public synchronized void renderPathsIn3DViewer(final Color color, final Image3DUniverse univ) {
 		use3DViewer = true;
 		this.univ = univ;
+		for (int i = 0; i < pathAndFillManager.size(); ++i) {
+			final Path p = pathAndFillManager.getPath(i);
+			p.addTo3DViewer(univ, color, colorImage);
+		}
+	}
+
+	public synchronized void renderPathsIn3DViewer(final int choice, final Image3DUniverse univ) {
+		use3DViewer = true;
+		this.univ = univ;
+
+		if (choice == GRAY_3DVIEWER) {
+			renderPathsIn3DViewer(DEFAULT_DESELECTED_COLOR, univ);
+			return;
+		}
+
 		final Color[] colors = new Color[pathAndFillManager.size()];
-		switch (choice) {
-		case GRAY_3DVIEWER:
-		default:
-			Arrays.fill(colors, DEFAULT_DESELECTED_COLOR);
-			break;
-		case COLOR_3DVIEWER:
+		if (choice == COLOR_3DVIEWER) {
 			for (int i = 0; i < pathAndFillManager.size(); ++i) {
 				Color color = pathAndFillManager.getPath(i).getColor();
 				if (color == null)
 					color = pathAndFillManager.getPath(i).getSWCcolor();
 				colors[i] = color;
 			}
-			break;
-		case COLORMAP_3DVIEWER:
+		} else if (choice == COLORMAP_3DVIEWER) {
 			final IndexColorModel cm = ColorMaps.viridisColorMap(-1, false);
 			for (int i = 0; i < pathAndFillManager.size(); ++i) {
 				final int idx = 255 * i / pathAndFillManager.size();
 				colors[i] = new Color(cm.getRed(idx), cm.getGreen(idx), cm.getBlue(idx));
 			}
-			break;
 		}
 
 		for (int i = 0; i < pathAndFillManager.size(); ++i) {
