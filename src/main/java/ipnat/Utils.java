@@ -21,12 +21,22 @@
  */
 package ipnat;
 
-
 import java.awt.Window;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
+
+import org.scijava.util.FileUtils;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -129,4 +139,33 @@ public class Utils {
 		return commandExists(Collections.singletonList(commandLabel));
 	}
 
+	public static File loadRemoteFileQuietly(final String urlString) {
+		File f = null;
+		try {
+			f = loadRemoteFile(new URL(urlString));
+		} catch (final IOException | IllegalArgumentException | SecurityException exc) {
+			// IPNAT.handleException(exc);
+			return null;
+		}
+		if (f == null || !f.exists())
+			return null;
+		return f;
+	}
+
+	public static File loadRemoteFile(final URL url) throws IllegalArgumentException, SecurityException, IOException {
+		final String filename = Paths.get(url.getPath()).getFileName().toString();
+		if (filename == null || filename.trim().length() < 3)
+			throw new IllegalArgumentException("URL does not contain a valid file path?");
+		final File tempDir = FileUtils.createTemporaryDirectory("ipnat", null);
+		final File file = new File(tempDir, filename);
+		final InputStream in = url.openStream();
+		Files.copy(in, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		String data = null;
+		final BufferedReader br = new BufferedReader(new FileReader(file));
+		data = br.readLine();
+		br.close();
+		if (data == null || data.isEmpty())
+			throw new IOException("No data could be read from parsed URL");
+		return file;
+	}
 }
