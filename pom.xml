@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>13.0.0</version>
+		<version>13.2.1</version>
 		<relativePath />
 	</parent>
 
@@ -75,8 +75,8 @@
 	<properties>
 		<license.licenseName>GPL_3</license.licenseName>
 		<license.copyrightOwners>Tiago Ferreira</license.copyrightOwners>
+		<delete.other.versions>true</delete.other.versions>
 		<Simple_Neurite_Tracer.version>3.1.0</Simple_Neurite_Tracer.version>
-		<enforcer.skip>true</enforcer.skip>
 	</properties>
 
 	<repositories>
