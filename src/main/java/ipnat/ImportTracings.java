@@ -148,32 +148,7 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 
 		try {
 
-			switch (rendingChoice) {
-			case UNTAGGED_SKEL:
-			case TAGGED_SKEL:
-				final String impTitle = chosenFile.getName();
-				final ImagePlus imp = renderPathVolume(rendingChoice == TAGGED_SKEL);
-				imp.setTitle(impTitle);
-				imp.show();
-				break;
-			case ROI_PATHS:
-				final Overlay overlay = new Overlay();
-				addPathsToOverlay(overlay, ThreePanes.XY_PLANE, true);
-				RoiManager rm = RoiManager.getInstance();
-				if (rm == null)
-					rm = new RoiManager();
-				for (final Roi path : overlay.toArray())
-					rm.addRoi(path);
-				break;
-			case GRAY_3DVIEWER:
-			case COLOR_3DVIEWER:
-			case COLORMAP_3DVIEWER:
-				renderPathsIn3DViewer(rendingChoice, reuseViewer);
-				break;
-			default:
-				IJ.log("Bug: Unknown option...");
-				return;
-			}
+			renderPaths(rendingChoice);
 
 		} catch (final Exception e) {
 
@@ -201,6 +176,42 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 
 		}
 
+	}
+
+	/**
+	 * Render imported paths.
+	 *
+	 * @param rendingChoice
+	 *            either {@link UNTAGGED_SKEL}, {@link TAGGED_SKEL},
+	 *            {@link ROI_PATHS}, {@link COLOR_3DVIEWER}, etc.
+	 */
+	public void renderPaths(final int rendingChoice) {
+		switch (rendingChoice) {
+		case UNTAGGED_SKEL:
+		case TAGGED_SKEL:
+			final ImagePlus imp = renderPathsAsSkeleton(rendingChoice == TAGGED_SKEL);
+			if (chosenFile != null)
+				imp.setTitle(chosenFile.getName());
+			imp.show();
+			break;
+		case ROI_PATHS:
+			final Overlay overlay = new Overlay();
+			addPathsToOverlay(overlay, ThreePanes.XY_PLANE, true);
+			RoiManager rm = RoiManager.getInstance();
+			if (rm == null)
+				rm = new RoiManager();
+			for (final Roi path : overlay.toArray())
+				rm.addRoi(path);
+			break;
+		case GRAY_3DVIEWER:
+		case COLOR_3DVIEWER:
+		case COLORMAP_3DVIEWER:
+			renderPathsIn3DViewer(rendingChoice, reuseViewer);
+			break;
+		default:
+			IPNAT.handleException(new IllegalArgumentException("Unknown rendering option..."));
+			return;
+		}
 	}
 
 	public boolean isSWCfile(final String filename) {
@@ -337,7 +348,7 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 		xy.setCalibration(cal);
 	}
 
-	public ImagePlus renderPathVolume(final boolean taggedSkeleton) {
+	public ImagePlus renderPathsAsSkeleton(final boolean taggedSkeleton) {
 		ImagePlus imp;
 		initializeTracingCanvas();
 		if (taggedSkeleton) {
