@@ -26,6 +26,8 @@ import java.net.URL;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+import org.scijava.Context;
+import org.scijava.log.LogService;
 import org.scijava.util.VersionUtils;
 
 import ij.IJ;
@@ -45,6 +47,44 @@ public class IPNAT {
 
 	/** A reference to the build year */
 	public static String BUILD_YEAR = buildYear();
+
+	private static Context context;
+	private static LogService logService;
+	private static boolean initialized;
+
+	private IPNAT() {
+	}
+
+	private synchronized static void initialize() {
+		if (initialized)
+			return;
+		if (context == null)
+			context = (Context) IJ.runPlugIn("org.scijava.Context", "");
+		if (logService == null)
+			logService = context.getService(LogService.class);
+		initialized = true;
+	}
+
+	protected static void error(final String string) {
+		IJ.error("hIPNAT v" + VERSION, string);
+	}
+
+	protected static void log(final String string) {
+		if (!initialized)
+			initialize();
+		logService.info("[hIPNAT] " + string);
+	}
+
+	protected static void warn(final String string) {
+		if (!initialized)
+			initialize();
+		logService.warn("[hIPNAT] " + string);
+	}
+
+	protected static void log(final String... strings) {
+		if (strings != null)
+			log(String.join(" ", strings));
+	}
 
 	public static void handleException(final Exception e) {
 		IJ.setExceptionHandler(new ipnat.ExceptionHandler());
