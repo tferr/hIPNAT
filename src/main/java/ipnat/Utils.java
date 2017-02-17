@@ -153,6 +153,11 @@ public class Utils {
 	}
 
 	public static File loadRemoteFile(final URL url) throws IllegalArgumentException, SecurityException, IOException {
+
+		// If a file URI, simply return local file
+		if (url.toString().startsWith("file:"))
+			return new File(url.getFile());
+
 		final String filename = Paths.get(url.getPath()).getFileName().toString();
 		if (filename == null || filename.trim().length() < 3)
 			throw new IllegalArgumentException("URL does not contain a valid file path?");
