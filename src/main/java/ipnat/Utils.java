@@ -125,7 +125,7 @@ public class Utils {
 		return classExists(Collections.singletonList(classStringName));
 	}
 
-	public boolean commandExists(final List<String> commandLabels) {
+	public static boolean commandExists(final List<String> commandLabels) {
 		@SuppressWarnings("rawtypes")
 		final Hashtable commands = Menus.getCommands();
 		for (final String commandLabel : commandLabels) {
@@ -135,7 +135,7 @@ public class Utils {
 		return true;
 	}
 
-	public boolean commandExists(final String commandLabel) {
+	public static boolean commandExists(final String commandLabel) {
 		return commandExists(Collections.singletonList(commandLabel));
 	}
 

@@ -53,8 +53,7 @@ public class SummarizeSkeleton implements PlugInFilter {
 		if (!IJ.isJava18()) {
 			IJ.error("\"Summarize Skeleton\" requires Java 1.8 or later.");
 			return DONE;
-		} else if (!Utils.validSkelDependencies()
-				&& !Utils.classExists(org.apache.commons.math3.stat.StatUtils.class.getName())) {
+		} else if (!Utils.validSkelDependencies() && !Utils.classExists(StatUtils.class.getName())) {
 			return DONE;
 		} else
 			return DOES_8G | NO_CHANGES;

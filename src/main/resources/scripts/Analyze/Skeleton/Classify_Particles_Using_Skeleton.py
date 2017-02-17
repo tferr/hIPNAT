@@ -29,7 +29,7 @@
 
 from ipnat.processing import Binary
 from sc.fiji.skeletonize3D import Skeletonize3D_
-from sc.fiji.analyzeSkeleton import AnalyzeSkeleton_, SkeletonResult
+from sc.fiji.analyzeSkeleton import AnalyzeSkeleton_
 from net.imagej.table import DefaultGenericTable, GenericColumn
 from java.awt import Color
 import math, sys
