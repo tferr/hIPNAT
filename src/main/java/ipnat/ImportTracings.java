@@ -67,8 +67,8 @@ import tracing.SimpleNeuriteTracer;
 /**
  * Allows SWC/TRACES files to be imported in ImageJ without a priori knowledge
  * of the original image from which tracings were obtained. In cases in which
- * the image is available, it is preferable to script
- * {@link PathAndFillManager} directly.
+ * the image is available, it is preferable to script {@link PathAndFillManager}
+ * directly.
  */
 public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, DialogListener {
 
@@ -88,18 +88,36 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 	private final double DEF_VOXEL_SIZE = 1d;
 	private final String DEF_VOXEL_UNIT = "unknown";
 
+	/** Flag for rendering monochrome paths in 3D viewer */
 	public static final int GRAY_3DVIEWER = 0;
+
+	/**
+	 * Flag for rendering colored paths in the 3D viewer. Typically colors are
+	 * rendered according to SWC types or as defined in SNT
+	 */
 	public static final int COLOR_3DVIEWER = 1;
+
+	/**
+	 * Flag for rendering colored paths in the 3D viewer. Colors are rendered
+	 * according to path ID.
+	 */
 	public static final int COLORMAP_3DVIEWER = 2;
+
+	/** Flag for rendering paths as a binary skeleton */
 	public static final int UNTAGGED_SKEL = 3;
+
+	/** Flag for rendering paths as a tagged skeleton */
 	public static final int TAGGED_SKEL = 4;
+
+	/** Flag for storing paths in the ROI Manager as 2D ROIs */
 	public static final int ROI_PATHS = 5;
 
-	/** These labels must match the indices of the options above **/
+	/* These labels must match the indices of the options above **/
 	private final String[] RENDING_OPTIONS = new String[] { "3D paths (monochrome)", "3D paths (STN/SWC-type colors)",
 			"3D paths (colored by path ID)", "Untagged skeleton", "Tagged skeleton",
 			"2D ROIs (stored in ROI Manager)" };
 
+	/* Plugin's prompt */
 	private EnhancedGenericDialog settingsDialog;
 	private final String PREFS_KEY = "tracing.SWCImportOptionsDialog.";
 	private int rendingChoice = COLOR_3DVIEWER;
@@ -115,6 +133,13 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 		applyCalibration(DEF_VOXEL_SIZE, DEF_VOXEL_SIZE, DEF_VOXEL_SIZE, "");
 		assumeCoordinatesIndexVoxels(false);
 	}
+
+	/**
+	 * Debugger method.
+	 *
+	 * @param args
+	 *            ignored
+	 */
 	public static void main(final String... args) {
 		new ImageJ();
 		IJ.runPlugIn(ImportTracings.class.getName(), null);
@@ -220,14 +245,38 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 		}
 	}
 
+	/**
+	 * Validates the file extension of an SWC or eSWC file.
+	 *
+	 * @param filename
+	 *            the filename/file path to be tested
+	 * @return {@code true}, if filename has an expected extension.
+	 */
 	public boolean isSWCfile(final String filename) {
 		return filename.toLowerCase().matches(".*\\.e?swc");
 	}
 
+	/**
+	 * Validates a TRACES file.
+	 *
+	 * @param filename
+	 *            the filename/file path to be tested
+	 * @return {@code true}, if filename has an expected extension.
+	 */
 	public boolean isTracesfile(final String filename) {
 		return filename.toLowerCase().endsWith(".traces");
 	}
 
+	/**
+	 * Applies a scaling factor (a non-zero positive value) to all SWC coordinates.
+	 *
+	 * @param xScale
+	 *            the factor for X coordinates
+	 * @param yScale
+	 *            the factor for Y coordinates
+	 * @param zScale
+	 *            the factor for Z coordinates
+	 */
 	public void applyScalingFactor(final double xScale, final double yScale, final double zScale) {
 		if (xScale > 0 && yScale > 0 && zScale > 0) {
 			this.xScale = xScale;
@@ -240,6 +289,16 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 		}
 	}
 
+	/**
+	 * Applies offsets to all SWC coordinates
+	 *
+	 * @param xOffset
+	 *            the offset for X coordinates
+	 * @param yOffset
+	 *            the offset for Y coordinates
+	 * @param zOffset
+	 *            the offset for Z coordinates
+	 */
 	public void applyOffset(final double xOffset, final double yOffset, final double zOffset) {
 		this.xOffset = xOffset;
 		this.yOffset = yOffset;
@@ -252,6 +311,19 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 		this.yOffset = DEFAULT_OFFSET;
 		this.zOffset = DEFAULT_OFFSET;
 	}
+
+	/**
+	 * Applies a spatial calibration to the rendering.
+	 *
+	 * @param voxelWidth
+	 *            Voxel width in 'unit's
+	 * @param voxelHeight
+	 *            Voxel height in 'unit's
+	 * @param voxelDepth
+	 *            Voxel depth in 'unit's
+	 * @param unit
+	 *            a length unit (e.g., "µm")
+	 */
 	public void applyCalibration(final double voxelWidth, final double voxelHeight, final double voxelDepth,
 			final String unit) {
 		this.voxelWidth = voxelWidth;
@@ -260,11 +332,33 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 		this.voxelUnit = unit;
 	}
 
+	/**
+	 * Loads a (e)SWC file after calculating suitable offsets.
+	 *
+	 * @param file
+	 *            the file to be loaded
+	 * @param replaceAllPaths
+	 *            if {@code true} any existing paths in the
+	 *            {@link PathAndFillManager} instance will be replaced by the
+	 *            loaded ones.
+	 */
 	public void autoLoadSWC(final File file, final boolean replaceAllPaths) {
 		chosenFile = file;
 		autoLoadSWC(file.getAbsolutePath(), replaceAllPaths);
 	}
 
+	/**
+	 * Loads a (e)SWC file after calculating suitable offsets.
+	 *
+	 * @param filePath
+	 *            the absolute path of the file to be loaded
+	 * @param replaceAllPaths
+	 *            if {@code true} any existing paths in the
+	 *            {@link PathAndFillManager} instance will be replaced by the
+	 *            loaded ones.
+	 * @throws RuntimeException
+	 *             if file was not successfully loaded
+	 */
 	public void autoLoadSWC(final String filePath, final boolean replaceAllPaths) {
 		applyOffset(xOffset, yOffset, zOffset);
 		applyScalingFactor(xScale, yScale, zScale);
