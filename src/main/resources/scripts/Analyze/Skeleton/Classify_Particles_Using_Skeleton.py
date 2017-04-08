@@ -20,8 +20,8 @@
     be associated to a skeleton feature if the distance between its centroid and
     the feature is less than or equal to a cuttoff ("snap to") distance.
 
-    :version: 20161116
-    :copyright: 2016 TF
+    :version: 201704
+    :copyright: 2016,2017 TF
     :url: https://github.com/tferr/hIPNAT
     :license: GPL3, see LICENSE for more details
 """
@@ -86,11 +86,20 @@ def ratio(n, total):
     return "0 (0.0%)" if total is 0 else "%d (%d%%)" % (n, round(float(n)/total*100, 3))
 
 def skeleton_properties(imp):
-    """ Retrieves lists of endpoints, junction points, and junction voxels from a skeleton """
+    """ Retrieves lists of endpoints, junction points, junction
+        voxels and total length from a skeletonized image
+    """
     skel_analyzer = AnalyzeSkeleton_()
     skel_analyzer.setup("", imp)
     skel_result = skel_analyzer.run()
-    return skel_result.getListOfEndPoints(), skel_result.getJunctions(), skel_result.getListOfJunctionVoxels()
+
+    avg_lengths = skel_result.getAverageBranchLength()
+    n_branches = skel_result.getBranches()
+    lengths = [n*avg for n,avg in zip(n_branches, avg_lengths)]
+    total_length = sum(lengths)
+
+    return (skel_result.getListOfEndPoints(), skel_result.getJunctions(),
+            skel_result.getListOfJunctionVoxels(), total_length)
 
 def skeletonize(imp):
     """ Skeletonizes the specified image in situ """
@@ -113,7 +122,7 @@ def run():
         return
 
     skeletonize(impSkel)
-    end_points, junctions, junction_voxels = skeleton_properties(impSkel)
+    end_points, junctions, junction_voxels, total_len = skeleton_properties(impSkel)
     if not end_points and not junction_voxels:
         error(impSkel.getTitle() + " does not seem a valid skeleton.")
         return
@@ -193,6 +202,7 @@ def run():
         addToTable(t, "Unc. particles", ratio(n_none, n_particles))
         addToTable(t, "Junctions w/ particles", ratio(n_bp+n_both, sum(junctions)))
         addToTable(t, "Tips w/ particles", ratio(n_tip+n_both, len(end_points)))
+        addToTable(t, "Density (N. particles/ Total skel. lenght)", n_particles/total_len)
         addToTable(t, "'Snap-to' dist.", str(cutoff_dist) + impPart.getCalibration().getUnits())
         addToTable(t, "Threshold range", "%d-%d" % (threshold_lower, threshold_upper))
         addToTable(t, "Size range", "%d-%d" % (size_min, size_max))
