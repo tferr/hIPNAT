@@ -1,0 +1,16 @@
+language: java
+sudo: false
+
+cache:
+  directories:
+    - $HOME/.m2/
+
+install:
+  - mvn package
+
+script:
+  - ./.travis-deploy.sh
+
+branches:
+  only:
+    - master
