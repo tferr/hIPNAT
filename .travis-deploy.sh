@@ -21,7 +21,6 @@ cd $TRAVIS_BUILD_DIR/
 mvn clean install -Dimagej.app.directory=$IJ_PATH -Ddelete.other.versions=true
 
 # Deploy
-cd $IJ_PATH/
-ARTIFACT=`find ./plugins/ -type f -print | grep 'hIPNAT_'`
+ARTIFACT=`find $IJ_PATH/plugins/ -type f -print | grep 'hIPNAT_'`
 $IJ_LAUNCHER --update edit-update-site $UPDATE_SITE $URL "webdav:$UPDATE_SITE:$NEUROANAT_UPLOAD_PASS" .
 $IJ_LAUNCHER --update upload --update-site $UPDATE_SITE --force-shadow $ARTIFACT
