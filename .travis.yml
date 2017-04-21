@@ -1,19 +1,17 @@
 language: java
 jdk:
-  - oraclejdk8
-
+- oraclejdk8
 sudo: false
-
 cache:
   directories:
-    - $HOME/.m2/
-
+  - $HOME/.m2/
 install:
-  - mvn package
-
+- mvn package
 script:
-  - ./.travis-deploy.sh
-
+- ./.travis-deploy.sh
 branches:
   only:
-    - master
+  - master
+env:
+  matrix:
+    secure: LfnyTEc9tQFUAHXc8xzkkEtgteFRdBmNm5v3PsrM4+o8pXTXzdmOaFTjzXspC19hGrQSNWQW5mJftpMb3S2KcyFPgm7+6vrn9YU7KhquHVv+cpvhG2WIEWh6XepTM/eIB6/T6KdeS1Tz3yPwXWDDWIHzHG206so6ifofe7xYGdb/1CCsL0zIkN6RTv2ZLf8SfFdccDUUfOY0E8wyLpbqKkXvV/a66zDwEZ2FNjb4dAbRv3rXk9lRI4SA+2nXjpU9GmqQY5mrG0blah2nzDJlVDN4Ao39bdG6IQm6UL0gKGJUgI2uBqmFsOvYSXHSn6nY2dlygf0Jyh+VgNGWIVytWGrvSDIjcZdbc0hJ17Idgfdin2foFpNZK+N0k/ApGI6tnswsgNOgkGipjsH4AGxdiSY8CWHs4Mi2bkuAADrMqCC7AAqydzztsp8yLnGeRQE2XSrbYc1c/M16QkdqBm3bAEaYJyxN4+7TxKdtHSrXJ7Ef/gbg5P6PPuOZzJUUpMdPZRl2E8erj0Cyx1JwDtLc4dRry6AmlkmO2GkcMJzHTwzTV46r9yzwNTu20r1L4GyH2gnmTuL8tjZwtsgCcJdYwAY/h1Dyh92/0XZIrGyYKJU5bkDN+t9s5HnWEhf2m/K1Kqt4Eo6LOcYjJVJr5/cOlwu9Dkk47smXz2Ww36Kd4qU=

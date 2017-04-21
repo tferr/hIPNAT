@@ -1,17 +1,27 @@
 #!/usr/bin/env sh
 set -e
 
-# Define all paths
-export DEPLOY_PATH="$HOME/code/deploy/"
+#Update site:
+export UPDATE_SITE="Neuroanatomy"
+export URL="http://sites.imagej.net/$UPDATE_SITE/"
+
+# Paths:
+export DEPLOY_PATH="$HOME/deploy/"
 export IJ_PATH="$DEPLOY_PATH/Fiji.app"
-export IJ_LAUNCHER="$IJ_PATH/Contents/MacOS/ImageJ-macosx"
+export IJ_LAUNCHER="$IJ_PATH/ImageJ-linux64"
 
 # Install IJ
 mkdir -p $IJ_PATH/
 cd $DEPLOY_PATH
-wget --no-check-certificate https://downloads.imagej.net/fiji/latest/fiji-macosx.zip
-unzip fiji-macosx.zip
+wget --no-check-certificate https://downloads.imagej.net/fiji/latest/fiji-linux64.zip
+unzip fiji-linux64.zip
 
 # Install artifact
 cd $TRAVIS_BUILD_DIR/
 mvn clean install -Dimagej.app.directory=$IJ_PATH -Ddelete.other.versions=true
+
+# Deploy
+cd $IJ_PATH/
+ARTIFACT=`find ./plugins/ -type f -print | grep 'hIPNAT_'`
+$IJ_LAUNCHER --update edit-update-site $UPDATE_SITE $URL "webdav:$UPDATE_SITE:$NEUROANAT_UPLOAD_PASS" .
+$IJ_LAUNCHER --update upload --update-site $UPDATE_SITE --force-shadow $ARTIFACT
