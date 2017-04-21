@@ -6,7 +6,7 @@ export UPDATE_SITE="Neuroanatomy"
 export URL="http://sites.imagej.net/$UPDATE_SITE/"
 
 # Paths:
-export DEPLOY_PATH="$HOME/deploy/"
+export DEPLOY_PATH="$HOME/deploy"
 export IJ_PATH="$DEPLOY_PATH/Fiji.app"
 export IJ_LAUNCHER="$IJ_PATH/ImageJ-linux64"
 
