@@ -18,12 +18,13 @@
 	<inceptionYear>2016</inceptionYear>
 	<organization>
 		<name>Fiji</name>
-		<url>https://fiji.sc</url>
+		<url>https://fiji.sc/</url>
 	</organization>
 	<licenses>
 		<license>
-			<name>GPL3</name>
-			<url>https://www.gnu.org/licenses/gpl-3.0.en.html/</url>
+			<name>GNU General Public License v3+</name>
+			<url>https://www.gnu.org/licenses/gpl.html</url>
+			<distribution>repo</distribution>
 		</license>
 	</licenses>
 
@@ -31,6 +32,7 @@
 		<developer>
 			<id>tferr</id>
 			<name>Tiago Ferreira</name>
+			<url>http://imagej.net/User:Tiago</url>
 			<roles>
 				<role>founder</role>
 				<role>lead</role>
@@ -40,7 +42,6 @@
 				<role>support</role>
 				<role>maintainer</role>
 			</roles>
-			<timezone>-5</timezone>
 		</developer>
 	</developers>
 	<contributors>
@@ -67,18 +68,19 @@
 		<url>https://github.com/tferr/hIPNAT/issues</url>
 	</issueManagement>
 	<ciManagement>
-		<system>None</system>
+		<system>Travis CI</system>
+		<url>https://travis-ci.org/tferr/hIPNAT</url>
 	</ciManagement>
 
 	<properties>
-		<license.licenseName>GPL_3</license.licenseName>
+		<package-name>hIPNAT</package-name>
+		<license.licenseName>gpl_v3</license.licenseName>
 		<license.copyrightOwners>Tiago Ferreira</license.copyrightOwners>
 		<delete.other.versions>true</delete.other.versions>
-		<Simple_Neurite_Tracer.version>3.1.0</Simple_Neurite_Tracer.version>
+		<license.projectName>Image Processing Tools for Neuroanatomy and Tree-like structures</license.projectName>
 	</properties>
 
 	<repositories>
-		<!-- NB: for project parent -->
 		<repository>
 			<id>imagej.public</id>
 			<url>http://maven.imagej.net/content/groups/public</url>
@@ -140,56 +142,4 @@
 			<artifactId>vecmath</artifactId>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<resources>
-			<resource>
-				<directory>${basedir}/src/main/resources</directory>
-			</resource>
-			<resource>
-				<directory>${project.build.sourceDirectory}</directory>
-			</resource>
-		</resources>
-		<testResources>
-			<testResource>
-				<directory>${basedir}/src/test/resources</directory>
-			</testResource>
-			<testResource>
-				<directory>${project.build.testSourceDirectory}</directory>
-			</testResource>
-		</testResources>
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>java</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<mainClass />
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<!--$NO-MVN-MAN-VER$ -->
-				<executions>
-					<execution>
-						<id>attach-javadocs</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-				<!-- java 1.8 -->
-				<!-- <configuration> <additionalparam>-Xdoclint:none</additionalparam> 
-					</configuration> -->
-			</plugin>
-</plugins>
-	</build>
-
 </project>
