@@ -22,5 +22,8 @@ mvn clean install -Dimagej.app.directory=$IJ_PATH -Ddelete.other.versions=true
 
 # Deploy
 ARTIFACT=`find $IJ_PATH/plugins/ -type f -print | grep 'hIPNAT_'`
+echo "Uploading %ARTIFACT"
+echo "Setting $UPDATE_SITE credentials"
 $IJ_LAUNCHER --update edit-update-site $UPDATE_SITE $URL "webdav:$UPDATE_SITE:$NEUROANAT_UPLOAD_PASS" .
+echo "Uploading to $UPDATE_SITE..."
 $IJ_LAUNCHER --update upload --update-site $UPDATE_SITE --force-shadow $ARTIFACT
