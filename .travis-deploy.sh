@@ -20,7 +20,7 @@ $IJ_LAUNCHER --update update-force-pristine
 
 # Install artifact
 cd $TRAVIS_BUILD_DIR/
-mvn clean package -Dfiji.home=$IJ_PATH
+mvn clean install -Dimagej.app.directory=$IJ_PATH -Ddelete.other.versions=true
 
 # Deploy if release version
 ARTIFACT=`find $IJ_PATH/plugins/ -type f -print | grep 'hIPNAT_'`
