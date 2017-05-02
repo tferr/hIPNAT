@@ -27,13 +27,11 @@ VERSION=`mvn help:evaluate -Dexpression=project.version | grep -e '^[^\[]'`
 
 case $VERSION in
   *SNAPSHOT*)
-    echo "SNAPSHOT release: skipping upload to $URL"
+    echo "v$VERSION: skipping SNAPSHOT upload to $URL"
     ;;
   *)
-    echo "Uploading $ARTIFACT"
-    echo "Setting $URL credentials"
+    echo "Uploading v$VERSION to $URL..."
     $IJ_LAUNCHER --update edit-update-site $UPDATE_SITE $URL "webdav:$UPDATE_SITE:$NEUROANAT_UPLOAD_PASS" .
-    echo "Uploading to $URL..."
-    $IJ_LAUNCHER --update upload --update-site $UPDATE_SITE $UPDATE_SITE --force-shadow plugins/hIPNAT_.jar
+    $IJ_LAUNCHER --update upload --update-site $UPDATE_SITE --force-shadow plugins/hIPNAT_.jar
     ;;
 esac
