@@ -23,13 +23,17 @@ cd $TRAVIS_BUILD_DIR/
 mvn clean install -Dimagej.app.directory=$IJ_PATH -Ddelete.other.versions=true
 
 # Deploy if release version
-ARTIFACT=`find $IJ_PATH/plugins/ -type f -print | grep 'hIPNAT_'`
-if [[ "$ARTIFACT" == *SNAPSHOT* ]]; then
+VERSION=`mvn help:evaluate -Dexpression=project.version | grep -e '^[^\[]'`
+
+case $VERSION in
+  *SNAPSHOT*)
     echo "SNAPSHOT release: skipping upload to $URL"
-else
+    ;;
+  *)
     echo "Uploading $ARTIFACT"
     echo "Setting $URL credentials"
     $IJ_LAUNCHER --update edit-update-site $UPDATE_SITE $URL "webdav:$UPDATE_SITE:$NEUROANAT_UPLOAD_PASS" .
     echo "Uploading to $URL..."
-    $IJ_LAUNCHER --update upload-complete-site --update-site $UPDATE_SITE --force-shadow plugins/hIPNAT_.jar
-fi
+    $IJ_LAUNCHER --update upload --update-site $UPDATE_SITE $UPDATE_SITE --force-shadow plugins/hIPNAT_.jar
+    ;;
+esac
