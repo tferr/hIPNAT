@@ -10,7 +10,7 @@
 	</parent>
 
 	<artifactId>hIPNAT_</artifactId>
-	<version>1.0.8-SNAPSHOT</version>
+	<version>1.0.8</version>
 
 	<name>hIPNAT</name>
 	<description>(highly capable) Image Processing Tools for Neuroanatomy and Tree-like structures</description>
