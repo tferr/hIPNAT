@@ -32,7 +32,7 @@ case $VERSION in
   *)
     echo "Uploading v$VERSION to $URL..."
     $IJ_LAUNCHER --update edit-update-site $UPDATE_SITE $URL "webdav:$UPDATE_SITE:$NEUROANAT_UPLOAD_PASS" .
-    $IJ_LAUNCHER --update upload-complete-site --force-shadow "$UPDATE_SITE"
+    $IJ_LAUNCHER --update upload-complete-site --simulate --force-shadow "$UPDATE_SITE"
     $IJ_LAUNCHER --update edit-update-site "$UPDATE_SITE" "$URL"
     ;;
 esac
