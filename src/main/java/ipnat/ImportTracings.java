@@ -504,7 +504,8 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 
 	private void initializeTracingCanvas() {
 
-		calculateCanvasDimensions(pathAndFillManager);
+		if (xy == null)
+			xy = new ImagePlus();
 
 		// Define spatial calibration of stack. We must initialize
 		// stacks.ThreePanes.xy to avoid a NPE later on
@@ -512,18 +513,36 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 		// stacks.ThreePanes.xy's calibration)
 		final Calibration cal = new Calibration();
 		if (tracesFile) {
-			cal.setUnit(spacing_units);
-			cal.pixelWidth = x_spacing;
-			cal.pixelHeight = y_spacing;
-			cal.pixelDepth = z_spacing;
-		} else if (spacing_units != null && !spacing_units.isEmpty()) {
-			cal.setUnit(spacing_units);
-			cal.pixelWidth = voxelWidth;
-			cal.pixelHeight = voxelHeight;
-			cal.pixelDepth = voxelHeight;
+
+			if (pathAndFillManager == null || pathAndFillManager.size() == 0)
+				throw new RuntimeException(
+						"initializeTracingCanvas() was called before successfully loading PathAndFillManager");
+
+			// Read values from loaded traces file
+			cal.setUnit(pathAndFillManager.parsed_units);
+			cal.pixelWidth = pathAndFillManager.parsed_x_spacing;
+			cal.pixelHeight = pathAndFillManager.parsed_y_spacing;
+			cal.pixelDepth = pathAndFillManager.parsed_z_spacing;
+			width = pathAndFillManager.parsed_width;
+			height = pathAndFillManager.parsed_height;
+			depth = pathAndFillManager.parsed_depth;
+
+			// Reset offsets
+			applyOffset(xOffsetGuessed = 0, yOffsetGuessed = 0, zOffsetGuessed = 0);
+
+		} else {
+
+			// SWC file: we need to calculate image size
+			calculateCanvasDimensions(pathAndFillManager);
+			if (spacing_units != null && !spacing_units.isEmpty()) {
+				cal.setUnit(spacing_units);
+				cal.pixelWidth = voxelWidth;
+				cal.pixelHeight = voxelHeight;
+				cal.pixelDepth = voxelHeight;
+			}
+
 		}
-		if (xy == null)
-			xy = new ImagePlus();
+
 		xy.setCalibration(cal);
 	}
 
