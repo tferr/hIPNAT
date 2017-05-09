@@ -142,6 +142,7 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 	 */
 	public static void main(final String... args) {
 		new ImageJ();
+		SimpleNeuriteTracer.verbose = true;
 		IJ.runPlugIn(ImportTracings.class.getName(), null);
 	}
 
