@@ -79,6 +79,7 @@
 		<delete.other.versions>true</delete.other.versions>
 		<license.projectName>Image Processing Tools for Neuroanatomy and Tree-like structures</license.projectName>
 		<Simple_Neurite_Tracer.version>3.1.3-SNAPSHOT</Simple_Neurite_Tracer.version>
+		<enforcer.skip>true</enforcer.skip>
 	</properties>
 
 	<repositories>
