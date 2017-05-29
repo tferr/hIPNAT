@@ -25,7 +25,6 @@
 from ij import IJ
 from ij.gui import Overlay, PointRoi
 from ij.measure import ResultsTable
-from ij.plugin import ImageCalculator
 
 from ipnat.processing import Binary
 from sc.fiji.skeletonize3D import Skeletonize3D_
@@ -131,13 +130,20 @@ def skeletonize(imp):
 
 def run():
 
-    if not impSkel.getProcessor().isBinary():
+    mask_ip = impSkel.getProcessor()
+    part_ip = impPart.getProcessor()
+
+    if not mask_ip.isBinary():
         error(impSkel.getTitle() + " is not a binary mask.")
         return
 
     # Mask grayscale image and skeletonize mask
-    ic = ImageCalculator()
-    ic.run("AND", impPart, impSkel)
+    mask_pixels = mask_ip.getPixels()
+    part_pixels = part_ip.getPixels()
+    for i in xrange(len(part_pixels)):  
+        if mask_pixels[i] == 0:  
+            part_pixels[i] = 0
+    part_ip.setPixels(part_pixels)
     skeletonize(impSkel)
 
     # Get skeleton features
@@ -229,8 +235,9 @@ def run():
         table = ResultsTable.getResultsTable()
         row = table.getCounter()
         table.showRowNumbers(False)
-        table.setNaNEmptyCells(False)
-        table.setValue("Skel image", row, impSkel.getTitle())
+        table.setNaNEmptyCells(False)    
+        table.setValue("Part. image", row, "%s (%s)" % (impPart.getTitle(), impPart.getCalibration().getUnits()))
+        table.setValue("Skel. image", row, "%s (%s)" % (impSkel.getTitle(), impSkel.getCalibration().getUnits()))
         table.setValue("Junction particles", row, ratio(n_bp, n_particles))
         table.setValue("Tip particles", row, ratio(n_tip, n_particles))
         table.setValue("J+T particles", row, ratio(n_both, n_particles))
