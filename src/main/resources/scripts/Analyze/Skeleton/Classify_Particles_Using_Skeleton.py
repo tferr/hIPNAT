@@ -1,11 +1,7 @@
 # @ImagePlus(label="Particles image") impPart
-# @Double(label="Lower threshold", min=1, max=80000, style="scroll bar", value=900) threshold_lower
-# @Double(label="Upper threshold", min=1, max=80000, style="scroll bar", value=65535) threshold_upper
-# @Double(label="Smallest particle size", description="In calibrated units", min=1, max=1000, style="scroll bar", value=1.5) size_min
-# @Double(label="Largest particle size", description="In calibrated units", min=1, max=1000, style="scroll bar", value=100) size_max
-# @String(value=" ", visibility="MESSAGE") spacer
-# @ImagePlus(label="Skeletonizable image", description="Must be 8-bit") impSkel
-# @Double(label="Max. \"snap to\" distance", description="In calibrated units", min=1, max=1000, style="scroll bar", value=5) cutoff_dist
+# @ImagePlus(label="Skeletonizable mask", description="Must be a binary image (black background)") impSkel
+# @String(label="AutoThreshold for particle detection", choices={"Default", "Huang", "Intermodes", "IsoData", "IJ_IsoData", "Li", "MaxEntropy", "Mean", "MinError", "Minimum", "Moments", "Otsu", "Percentile", "RenyiEntropy", "Shanbhag", "Triangle", "Yen"}) thres_method
+# @Double(label="Max. \"snap to\" distance", description="In calibrated units", min=1, max=1000, style="scroll bar", value=3) cutoff_dist
 # @Boolean(label="Display measurements", value=false) display_measurements
 # @UIService uiService
 # @ImageJ ij
@@ -14,18 +10,22 @@
     Classify_Particles_Using_Skeleton.py
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Tags particles according to skeleton features: Runs IJ's ParticleAnalyzer on
-    one image and clusters detected particles according to their positioning to
-    features of a tagged skeleton in another image. A particle is considered to
-    be associated to a skeleton feature if the distance between its centroid and
-    the feature is less than or equal to a cuttoff ("snap to") distance.
+    Tags particles according to skeleton features: Detects maxima on a masked
+    image and clusters detected particles according to their positioning to
+    features of the skeletonized mask. A maxima is considered to be associated
+    to a skeleton feature (node, tip, etc.) if the distance between its centroid
+    and the feature is less than or equal to a cuttoff ("snap to") distance.
 
-    :version: 201704
+    :version: 201706
     :copyright: 2016,2017 TF
     :url: https://github.com/tferr/hIPNAT
     :license: GPL3, see LICENSE for more details
 """
 
+from ij import IJ
+from ij.gui import Overlay, PointRoi
+from ij.measure import ResultsTable
+from ij.plugin import ImageCalculator
 
 from ipnat.processing import Binary
 from sc.fiji.skeletonize3D import Skeletonize3D_
@@ -33,6 +33,7 @@ from sc.fiji.analyzeSkeleton import AnalyzeSkeleton_
 from net.imagej.table import DefaultGenericTable, GenericColumn
 from java.awt import Color
 import math, sys
+
 
 def addToTable(table, column_header, value):
     """ Adds the specified value to the specifed column of an IJ table """
@@ -47,43 +48,61 @@ def addToTable(table, column_header, value):
         table.remove(col_idx)
         table.add(col_idx, column)
 
+
+def cleanse_overlay(overlay):
+    """ Removes all point ROIs from the specified overlay """
+    if not overlay:
+        return Overlay()
+    for i in reversed(range(overlay.size())):
+        roi = overlay.get(i)
+        if isinstance(roi, PointRoi):
+            overlay.remove(i)
+    return overlay
+
+
 def distance(x1, y1, x2, y2):
      """ Calculates the distance between 2D points """
      return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+
 
 def error(msg):
     """ Displays an error message """
     uiService.showDialog(msg, "Error")
 
-def getCentroids(imp, lower_t, upper_t, min_size, max_size):
-    """ Returns centroids from IJ1's ParticleAnalyzer. Detected
-        particles are added to the image overlay.
-     """
-    from ij import IJ
-    from ij.measure import ResultsTable as RT, Measurements as M
-    from ij.plugin.filter import ParticleAnalyzer as PA
-    rt = RT()
-    imp.deleteRoi()
-    IJ.setThreshold(imp, lower_t, upper_t, "No Update")
-    pa = PA(PA.SHOW_OVERLAY_MASKS, M.CENTROID, rt, min_size, max_size)
-    pa.analyze(imp)
-    IJ.resetThreshold(imp)
-    return rt.getColumn(RT.X_CENTROID), rt.getColumn(RT.Y_CENTROID)
 
-def measureOverlay(imp):
-    """ Measures all ROIs in an image overlay """
-    from ij.plugin.filter import Analyzer
-    overlay = imp.getOverlay()
-    if overlay:
-        analyzer = Analyzer(imp)
-        for roi in overlay.toArray():
-           imp.setRoi(roi)
-           analyzer.measure()
-           analyzer.displayResults()
+def get_centroids(imp, tolerance):
+    """ Returns maxima using IJ1 """
+    from ij.plugin.filter import MaximumFinder
+    mf = MaximumFinder()
+    maxima = mf.getMaxima(imp.getProcessor(), tolerance, True)
+    return maxima.xpoints, maxima.ypoints, maxima.npoints
+
+
+def get_threshold(imp, method):
+    #from ij.process import AutoThresholder
+    #from ij.process import ImageStatistics
+    #thresholder = AutoThresholder()
+    #method = AutoThresholder.Method.Moments
+    #stats = ip.getStatistics()
+    #result = thresholder.getThreshold(method, stats.histogram)
+    arg = "%s dark" % method
+    IJ.setAutoThreshold(imp, arg)
+    value = imp.getProcessor().getMinThreshold()
+    IJ.resetThreshold(imp)
+    return value
+
+def pixel_size(imp):
+    """ Returns the smallest pixel length of the specified image """
+    cal = imp.getCalibration()
+    return min(cal.pixelWidth, cal.pixelHeight)
+
 
 def ratio(n, total):
     """ Returns a readable frequency for the specified ratio """
-    return "0 (0.0%)" if total is 0 else "%d (%d%%)" % (n, round(float(n)/total*100, 3))
+    a = "0 (0.0%)" if total is 0 else "%d (%d%%)" % (n, round(float(n)/total*100, 3))
+    #print(a)
+    return n
+
 
 def skeleton_properties(imp):
     """ Retrieves lists of endpoints, junction points, junction
@@ -101,6 +120,7 @@ def skeleton_properties(imp):
     return (skel_result.getListOfEndPoints(), skel_result.getJunctions(),
             skel_result.getListOfJunctionVoxels(), total_length)
 
+
 def skeletonize(imp):
     """ Skeletonizes the specified image in situ """
     thin = Skeletonize3D_()
@@ -108,39 +128,36 @@ def skeletonize(imp):
     thin.run(None)
     Binary.removeIsolatedPixels(imp)
 
-def pixel_size(imp):
-    """ Returns the smallest pixel length of the specified image """
-    cal = imp.getCalibration()
-    return min(cal.pixelWidth, cal.pixelHeight)
-
 
 def run():
 
-    # Get skeleton features
-    if impSkel.getBitDepth() != 8:
-        error(impSkel.getTitle() + " cannot be processed: It is not 8-bit")
+    if not impSkel.getProcessor().isBinary():
+        error(impSkel.getTitle() + " is not a binary mask.")
         return
 
+    # Mask grayscale image and skeletonize mask
+    ic = ImageCalculator()
+    ic.run("AND", impPart, impSkel)
     skeletonize(impSkel)
+
+    # Get skeleton features
     end_points, junctions, junction_voxels, total_len = skeleton_properties(impSkel)
     if not end_points and not junction_voxels:
         error(impSkel.getTitle() + " does not seem a valid skeleton.")
         return
 
-    # Retrieve centroids from IJ1 ParticleAnalyzer. For convenience
-    # we'll store particles (traced ROIs) in the image overlay
-    cx, cy = getCentroids(impPart, threshold_lower, threshold_upper, size_min, size_max)
-    overlay = impPart.getOverlay()
-    if None in (cx, cy, overlay):
+    # Retrieve centroids from IJ1
+    threshold_lower = get_threshold(impPart, thres_method)
+    cx, cy, n_particles = get_centroids(impPart, threshold_lower)
+    if None in (cx, cy):
         error("Verify parameters: No particles detected.")
         return
 
-    # Loop through particles' centroids and categorize each particle according
-    # to its distance to skeleton features. The procedure is simple enough
-    # that we can use traced ROIs directly
-    n_particles = len(cx)
+    # Loop through each centroids and categorize its position
+    # according to its distance to skeleton features
     n_bp = n_tip = n_none = n_both = 0
 
+    overlay = cleanse_overlay(impPart.getOverlay())
     for i in range(n_particles):
 
         j_dist = ep_dist = sys.maxint
@@ -157,7 +174,7 @@ def run():
             if (dist <= cutoff_dist and dist < ep_dist):
                 ep_dist = dist
 
-        roi_id = str(i).zfill(n_particles)
+        roi_id = str(i).zfill(len(str(n_particles)))
         roi_name = "Unknown:" + roi_id
         roi_color = Color.BLUE
 
@@ -181,9 +198,10 @@ def run():
             roi_color = Color.MAGENTA
             n_bp += 1
 
-        roi = overlay.get(i)
+        roi = PointRoi(cx[i], cy[i])
         roi.setName(roi_name)
-        roi.setFillColor(roi_color)
+        roi.setStrokeColor(roi_color)
+        overlay.add(roi)
 
     # Display result
     impSkel.setOverlay(overlay)
@@ -192,21 +210,40 @@ def run():
     # Output some measurements
     if display_measurements:
 
-        measureOverlay(impPart)
+#        t = DefaultGenericTable()
+#        t.appendRow(impPart.getTitle())
+#        addToTable(t, "Skel image", impSkel.getTitle())
+#        addToTable(t, "Junction particles", ratio(n_bp, n_particles))
+#        addToTable(t, "Tip particles", ratio(n_tip, n_particles))
+#        addToTable(t, "J+T particles", ratio(n_both, n_particles))
+#        addToTable(t, "Unc. particles", ratio(n_none, n_particles))
+#        addToTable(t, "Junctions w/ particles", ratio(n_bp+n_both, sum(junctions)))
+#        addToTable(t, "Tips w/ particles", ratio(n_tip+n_both, len(end_points)))
+#        addToTable(t, "Total skel. lenght", total_len)
+#        addToTable(t, "Density (N. unc. particles/ Total skel. lenght)", n_none/total_len)
+#        addToTable(t, "'Snap-to' dist.", str(cutoff_dist) + impPart.getCalibration().getUnits())
+#        addToTable(t, "Threshold range", "%d-%d" % (threshold_lower, threshold_upper))
+#        addToTable(t, "Size range", "%d-%d" % (size_min, size_max))
+#        ij.ui().show("Skeleton Classified Particles", t)
 
-        t = DefaultGenericTable()
-        t.appendRow(impPart.getTitle())
-        addToTable(t, "Junction particles", ratio(n_bp, n_particles))
-        addToTable(t, "Tip particles", ratio(n_tip, n_particles))
-        addToTable(t, "J+T particles", ratio(n_both, n_particles))
-        addToTable(t, "Unc. particles", ratio(n_none, n_particles))
-        addToTable(t, "Junctions w/ particles", ratio(n_bp+n_both, sum(junctions)))
-        addToTable(t, "Tips w/ particles", ratio(n_tip+n_both, len(end_points)))
-        addToTable(t, "Density (N. particles/ Total skel. lenght)", n_particles/total_len)
-        addToTable(t, "'Snap-to' dist.", str(cutoff_dist) + impPart.getCalibration().getUnits())
-        addToTable(t, "Threshold range", "%d-%d" % (threshold_lower, threshold_upper))
-        addToTable(t, "Size range", "%d-%d" % (size_min, size_max))
-        ij.ui().show("Skeleton Classified Particles", t)
+        table = ResultsTable.getResultsTable()
+        row = table.getCounter()
+        table.showRowNumbers(False)
+        table.setNaNEmptyCells(False)
+        table.setValue("Skel image", row, impSkel.getTitle())
+        table.setValue("Junction particles", row, ratio(n_bp, n_particles))
+        table.setValue("Tip particles", row, ratio(n_tip, n_particles))
+        table.setValue("J+T particles", row, ratio(n_both, n_particles))
+        table.setValue("Unc. particles", row, ratio(n_none, n_particles))
+        table.setValue("Junctions w/ particles", row, ratio(n_bp+n_both, sum(junctions)))
+        table.setValue("Tips w/ particles", row, ratio(n_tip+n_both, len(end_points)))
+        table.setValue("Total skel. lenght", row, total_len)
+        table.setValue("Total end points", row, len(end_points))
+        table.setValue("Total junctions", row, sum(junctions))
+        table.setValue("Density (N. unc. particles/ Total skel. lenght)", row, n_none/total_len)
+        table.setValue("'Snap-to' dist.", row, str(cutoff_dist) + impPart.getCalibration().getUnits())
+        table.setValue("Threshold", row, "%d (%s)" % (threshold_lower, thres_method))
+        table.show("Results")
 
 
 run()
