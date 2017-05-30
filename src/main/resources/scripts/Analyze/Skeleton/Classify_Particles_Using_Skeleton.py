@@ -1,4 +1,4 @@
-# @String(visibility="MESSAGE",value="<html><div WIDTH=600>This script tags particles according to skeleton features: It detects maxima on a masked image and clusters detected maxima using features of the skeletonized mask. A maxima is considered to be associated to a skeleton feature (junction, tip, etc.) if the distance between its centroid and the feature is less than or equal to a cuttoff (\"snap to\") distance.") MSG
+# @String(visibility="MESSAGE",value="<html><div WIDTH=600>This script tags particles according to skeleton features: It detects maxima on a masked image and clusters detected maxima using features of the mask-derived skeleton. A maxima is considered to be associated to a skeleton feature (junction, tip, etc.) if the distance between its centroid and the feature is less than or equal to a cuttoff (\"snap to\") distance.") MSG
 # @ImagePlus(label="Particles image") impPart
 # @ImagePlus(label="Skeletonizable mask", description="Must be a binary image (background = 0). Used to confine maxima detection and generate skeleton") impSkel
 # @String(label="AutoThreshold for particle detection", choices={"Default", "Huang", "Intermodes", "IsoData", "IJ_IsoData", "Li", "MaxEntropy", "Mean", "MinError", "Minimum", "Moments", "Otsu", "Percentile", "RenyiEntropy", "Shanbhag", "Triangle", "Yen"}) thres_method
@@ -18,7 +18,7 @@
     tip, etc.) if the distance between its centroid and the feature is less than
     or equal to a cuttoff ("snap to") distance.
 
-    :version: 201706
+    :version: 20170530
     :copyright: 2017 TF
     :url: https://github.com/tferr/hIPNAT
     :license: GPL3, see LICENSE for more details
@@ -161,7 +161,7 @@ def run():
                 part_pixels[i] = 0
         part_ip.setPixels(part_pixels)
     except IndexError:
-        error("Chosen images are not the same size:")
+        error("Chosen images are not the same size.")
     skeletonize(impSkel)
 
     # Get skeleton features
