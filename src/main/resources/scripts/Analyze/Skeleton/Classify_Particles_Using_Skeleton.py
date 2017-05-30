@@ -118,12 +118,6 @@ def pixel_size(imp):
     return min(cal.pixelWidth, cal.pixelHeight)
 
 
-def ratio(n, total):
-    """ Returns a readable frequency for the specified ratio """
-    r = "0 (0.0%)" if total is 0 else "%d (%d%%)" % (n, round(float(n)/total*100, 2))
-    return r
-
-
 def skeleton_properties(imp):
     """ Retrieves lists of endpoints, junction points, junction
         voxels and total length from a skeletonized image
@@ -159,12 +153,15 @@ def run():
         return
 
     # Mask grayscale image and skeletonize mask
-    mask_pixels = mask_ip.getPixels()
-    part_pixels = part_ip.getPixels()
-    for i in xrange(len(part_pixels)):
-        if mask_pixels[i] == 0:
-            part_pixels[i] = 0
-    part_ip.setPixels(part_pixels)
+    try:
+        mask_pixels = mask_ip.getPixels()
+        part_pixels = part_ip.getPixels()
+        for i in xrange(len(part_pixels)):
+            if mask_pixels[i] == 0:
+                part_pixels[i] = 0
+        part_ip.setPixels(part_pixels)
+    except IndexError:
+        error("Chosen images are not the same size:")
     skeletonize(impSkel)
 
     # Get skeleton features
@@ -246,17 +243,17 @@ def run():
         t = ResultsTable.getResultsTable() if "IJ1" in output else DefaultGenericTable()
         addToTable(t, "Part. image", "%s (%s)" % (impPart.getTitle(), impPart.getCalibration().getUnits()))
         addToTable(t, "Skel. image", "%s (%s)" % (impSkel.getTitle(), impSkel.getCalibration().getUnits()))
-        addToTable(t, "Junction particles", ratio(n_bp, n_particles))
-        addToTable(t, "Tip particles", ratio(n_tip, n_particles))
-        addToTable(t, "J+T particles", ratio(n_both, n_particles))
-        addToTable(t, "Unc. particles", ratio(n_none, n_particles))
-        addToTable(t, "Junctions w/ particles", ratio(n_bp+n_both, sum(junctions)))
-        addToTable(t, "Tips w/ particles", ratio(n_tip+n_both, len(end_points)))
+        addToTable(t, "Junction particles", n_bp)
+        addToTable(t, "Tip particles", n_tip)
+        addToTable(t, "J+T particles", n_both)
+        addToTable(t, "Unc. particles", n_none)
+        addToTable(t, "Junctions w/ particles", n_bp + n_both)
+        addToTable(t, "Tips w/ particles", n_tip + n_both)
         addToTable(t, "Total skel. lenght", total_len)
         addToTable(t, "Total end points", len(end_points))
         addToTable(t, "Total junctions", sum(junctions))
-        addToTable(t, "Density (N. unc. particles/ Total skel. lenght)", n_none/total_len)
-        addToTable(t, "'Snap-to' dist.", str(cutoff_dist) + impPart.getCalibration().getUnits())
+        addToTable(t, "Unc. particles / Total skel. lenght)", n_none/total_len)
+        addToTable(t, "Snap-to dist.", str(cutoff_dist) + impPart.getCalibration().getUnits())
         addToTable(t, "Threshold", "%d (%s)" % (threshold_lower, thres_method))
         showTable(t, "Results")
 
