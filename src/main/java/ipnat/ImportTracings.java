@@ -163,7 +163,7 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 			if (!getSWCsettingsFromUser())
 				return;
 			saveSWCSettings();
-			autoLoadSWC(chosenFile.getAbsolutePath(), true);
+			loadSWC(chosenFile.getAbsolutePath(), true);
 
 		} else if (isTracesfile(chosenFile.getName())) {
 
@@ -445,9 +445,9 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 		// Calculate smallest dimensions of stack holding the rendering of paths
 		// and suggest users with suitable offsets in case input was not
 		// suitable
-		int canvasXstart = Integer.MAX_VALUE;
-		int canvasYstart = Integer.MAX_VALUE;
-		int canvasZstart = Integer.MAX_VALUE;
+		int canvasXstart = 0;
+		int canvasYstart = 0;
+		int canvasZstart = 0;
 		int canvasXend = Integer.MIN_VALUE;
 		int canvasYend = Integer.MIN_VALUE;
 		int canvasZend = Integer.MIN_VALUE;
@@ -821,11 +821,13 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 		xOffset = settingsDialog.getNextNumber();
 		yOffset = settingsDialog.getNextNumber();
 		zOffset = settingsDialog.getNextNumber();
+		if (!applyOffset) xOffset = yOffset = zOffset = 0.;
 
 		applyScale = settingsDialog.getNextBoolean();
 		xScale = Math.max(0.01, settingsDialog.getNextNumber());
 		yScale = Math.max(0.01, settingsDialog.getNextNumber());
 		zScale = Math.max(0.01, settingsDialog.getNextNumber());
+		if (!applyScale) xScale = yScale = zScale = 1.;
 
 		rendingChoice = settingsDialog.getNextChoiceIndex();
 		reuseViewer = settingsDialog.getNextBoolean();
