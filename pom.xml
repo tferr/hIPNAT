@@ -78,7 +78,6 @@
 		<license.copyrightOwners>Tiago Ferreira</license.copyrightOwners>
 		<delete.other.versions>true</delete.other.versions>
 		<license.projectName>Image Processing Tools for Neuroanatomy and Tree-like structures</license.projectName>
-		<Simple_Neurite_Tracer.version>3.1.4</Simple_Neurite_Tracer.version>
 		<enforcer.skip>true</enforcer.skip>
 	</properties>
 
@@ -117,10 +116,6 @@
 		</dependency>
 		<dependency>
 			<groupId>sc.fiji</groupId>
-			<artifactId>Simple_Neurite_Tracer</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>sc.fiji</groupId>
 			<artifactId>Fiji_Plugins</artifactId>
 		</dependency>
 		<dependency>
@@ -142,6 +137,11 @@
 		<dependency>
 			<groupId>org.scijava</groupId>
 			<artifactId>vecmath</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>Simple_Neurite_Tracer</artifactId>
+			<version>3.1.6-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 </project>

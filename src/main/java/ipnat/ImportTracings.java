@@ -57,11 +57,12 @@ import ij3d.Image3DUniverse;
 import ij3d.ImageWindow3D;
 import sc.fiji.analyzeSkeleton.AnalyzeSkeleton_;
 import sholl.gui.EnhancedGenericDialog;
-import stacks.ThreePanes;
 import tracing.Path;
 import tracing.PathAndFillManager;
 import tracing.PointSelectionBehavior;
 import tracing.SimpleNeuriteTracer;
+import tracing.Tree;
+import tracing.analysis.RoiConverter;
 
 // TODO: implement other rending options: ClearVolume
 /**
@@ -128,6 +129,7 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 	 * Instantiates a new class using sensible defaults for most SWC files.
 	 */
 	public ImportTracings() {
+		super();
 		applyOffset(DEFAULT_OFFSET, DEFAULT_OFFSET, DEFAULT_OFFSET);
 		applyScalingFactor(DEFAULT_SCALE, DEFAULT_SCALE, DEFAULT_SCALE);
 		applyCalibration(DEF_VOXEL_SIZE, DEF_VOXEL_SIZE, DEF_VOXEL_SIZE, "");
@@ -228,7 +230,8 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 			break;
 		case ROI_PATHS:
 			final Overlay overlay = new Overlay();
-			addPathsToOverlay(overlay, ThreePanes.XY_PLANE, true);
+			RoiConverter converter = new RoiConverter(new Tree(pathAndFillManager.getPaths()));
+			converter.convertPaths(overlay);
 			RoiManager rm = RoiManager.getInstance();
 			if (rm == null)
 				rm = new RoiManager();
@@ -511,7 +514,7 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 		// stacks.ThreePanes.xy to avoid a NPE later on
 		// (tracing.SimpleNeuriteTracer.makePathVolume() inherits
 		// stacks.ThreePanes.xy's calibration)
-		final Calibration cal = new Calibration();
+		final Calibration cal = pathAndFillManager.getParsedCalibration();
 		if (tracesFile) {
 
 			if (pathAndFillManager == null || pathAndFillManager.size() == 0)
@@ -519,13 +522,10 @@ public class ImportTracings extends SimpleNeuriteTracer implements PlugIn, Dialo
 						"initializeTracingCanvas() was called before successfully loading PathAndFillManager");
 
 			// Read values from loaded traces file
-			cal.setUnit(pathAndFillManager.parsed_units);
-			cal.pixelWidth = pathAndFillManager.parsed_x_spacing;
-			cal.pixelHeight = pathAndFillManager.parsed_y_spacing;
-			cal.pixelDepth = pathAndFillManager.parsed_z_spacing;
-			width = pathAndFillManager.parsed_width;
-			height = pathAndFillManager.parsed_height;
-			depth = pathAndFillManager.parsed_depth;
+			final int[] dimensions = pathAndFillManager.getParsedDimensions();
+			width = dimensions[0];
+			height = dimensions[1];
+			depth = dimensions[2];
 
 			// Reset offsets
 			applyOffset(xOffsetGuessed = 0, yOffsetGuessed = 0, zOffsetGuessed = 0);
