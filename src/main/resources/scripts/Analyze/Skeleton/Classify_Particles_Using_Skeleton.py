@@ -18,8 +18,8 @@
     tip, etc.) if the distance between its centroid and the feature is less than
     or equal to a cuttoff ("snap to") distance.
 
-    :version: 20170530
-    :copyright: 2017 TF
+    :version: 20190111
+    :copyright: 2017-2019 TF
     :url: https://github.com/tferr/hIPNAT
     :license: GPL3, see LICENSE for more details
 """
@@ -32,7 +32,7 @@ from ij.plugin.filter import MaximumFinder
 from ipnat.processing import Binary
 from sc.fiji.skeletonize3D import Skeletonize3D_
 from sc.fiji.analyzeSkeleton import AnalyzeSkeleton_
-from net.imagej.table import DefaultGenericTable, GenericColumn
+from org.scijava.table import DefaultGenericTable, GenericColumn
 from java.awt import Color
 import math, sys
 
