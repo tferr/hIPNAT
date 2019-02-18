@@ -14,7 +14,7 @@
 
 	<name>hIPNAT</name>
 	<description>(highly capable) Image Processing Tools for Neuroanatomy and Tree-like structures</description>
-	<url>http://imagej.net/Neuroanatomy</url>
+	<url>https://imagej.net/Neuroanatomy</url>
 	<inceptionYear>2016</inceptionYear>
 	<organization>
 		<name>Fiji</name>
@@ -32,7 +32,7 @@
 		<developer>
 			<id>tferr</id>
 			<name>Tiago Ferreira</name>
-			<url>http://imagej.net/User:Tiago</url>
+			<url>https://imagej.net/User:Tiago</url>
 			<roles>
 				<role>founder</role>
 				<role>lead</role>
@@ -84,7 +84,7 @@
 	<repositories>
 		<repository>
 			<id>imagej.public</id>
-			<url>http://maven.imagej.net/content/groups/public</url>
+			<url>https://maven.imagej.net/content/groups/public</url>
 		</repository>
 	</repositories>
 
