@@ -25,14 +25,9 @@ import java.awt.Checkbox;
 import java.awt.Choice;
 import java.awt.Font;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.ListIterator;
 import java.util.Vector;
-
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 
 import ij.IJ;
 import ij.ImageJ;
@@ -67,9 +62,10 @@ import sholl.gui.EnhancedGenericDialog;
  *
  * @author Tiago Ferreira
  */
+@SuppressWarnings("deprecation")
 public class Strahler implements PlugIn, DialogListener {
 
-	protected static final String URL = "http://imagej.net/Strahler_Analysis";
+	protected static final String URL = "https://imagej.net/Strahler_Analysis";
 
 	/* Default value for max. number of pruning cycles */
 	int maxOrder = 30;
@@ -114,16 +110,9 @@ public class Strahler implements PlugIn, DialogListener {
 	Roi rootRoi; // Reference to the "root-protecting" ROI
 	ImageProcessor ip;
 
-	/**
-	 * Calls {@link fiji.Debug#run(String, String) fiji.Debug.run()} so that the
-	 * plugin can be debugged from an IDE
-	 *
-	 * @param args
-	 *            the arguments as specified in {@code plugins.config}
-	 */
+	/** IDE Debug method */
 	public static void main(final String[] args) {
 
-		// Debug.run("Strahler Analysis...", null);
 		new ImageJ(); // start ImageJ
 		final ImagePlus imp = new LSystemsTree().createTreeStack("DebugImp");
 		imp.setRoi(330, 510, 60, 50);
@@ -158,8 +147,7 @@ public class Strahler implements PlugIn, DialogListener {
 		if (srcImp.getNSlices() > 1) {
 			final String warning = "3D images are currently supported with the following limitations:\n"
 					+ "    - 'Root-protecting' ROIs are not yet supported\n"
-					+ "    - Lengths are estimated from Z-projections\n \n"
-					+ "These issues will be addressed in future releases.";
+					+ "    - Lengths are estimated from Z-projections";
 			if (IJ.macroRunning())
 				IJ.log(warning);
 			else
@@ -528,40 +516,17 @@ public class Strahler implements PlugIn, DialogListener {
 		gd.addCheckbox("Display_iteration stack", outIS);
 		gd.addCheckbox("Show detailed information", verbose);
 		gd.addCheckbox("Tabular data only (no image output)", tabular);
+		gd.setInsets(25, 0, 0);
+		gd.addHyperlinkMessage("This plugin attempts at performing Strahler\n"
+				+ "analysis directly from an image. For complete\n"
+				+ "Strahler classification please use SNT.", null, 
+				EnhancedGenericDialog.infoColor(), "https://imagej.net/SNT");
 
 		gd.addDialogListener(this);
 		dialogItemChanged(gd, null); // update prompt
 
-		// Add More>> dropdown menu
-		final JPopupMenu popup = new JPopupMenu();
-		JMenuItem mi;
-		mi = new JMenuItem("Online documentation");
-		mi.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(final ActionEvent e) {
-				IJ.runPlugIn("ij.plugin.BrowserLauncher", URL);
-			}
-		});
-		popup.add(mi);
-		popup.addSeparator();
-		mi = new JMenuItem("List hIPNAT commands...");
-		mi.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(final ActionEvent e) {
-				IJ.runPlugIn("ij.plugin.BrowserLauncher", IPNAT.DOC_URL + "#List_of_commands");
-			}
-		});
-		popup.add(mi);
-		mi = new JMenuItem("About hIPNAT plugins...");
-		mi.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(final ActionEvent e) {
-				IJ.runPlugIn("ipnat.Help", "");
-			}
-		});
-		popup.add(mi);
-		gd.assignPopupToHelpButton(popup);
-
+		gd.addHelp(URL);
+		gd.setHelpLabel("Online Help");
 		gd.showDialog();
 
 		// Set grayscale image for intensity-based pruning of skel. loops.

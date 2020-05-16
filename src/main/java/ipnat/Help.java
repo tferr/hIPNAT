@@ -57,7 +57,6 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.DefaultEditorKit;
 
-import fiji.Debug;
 import ij.IJ;
 import ij.ImageJ;
 import ij.Menus;
@@ -72,12 +71,9 @@ public class Help implements PlugIn {
 	private JFrame frame;
 	private static String FRAME_TITLE = "About " + IPNAT.ABBREV_NAME;
 
-	/**
-	 * Calls {@link fiji.Debug#runPlugIn(String, String, boolean)
-	 * fiji.Debug.runPlugIn()} so that the plugin can be debugged from an IDE
-	 */
+	/** Debug method */
 	public static void main(final String[] args) {
-		Debug.runPlugIn("ipnat.Help", "", false);
+		IJ.runPlugIn("ipnat.Help", "");
 	}
 
 	/*
@@ -165,7 +161,6 @@ public class Help implements PlugIn {
 				+ "a {color:#002390; text-decoration:none} "
 				+ "</style>"
 				+ "</head>"
-				+ "<div WIDTH=390>"
 				+ "<h3>" + IPNAT.ABBREV_NAME + " v" + IPNAT.VERSION + "   "+ IPNAT.BUILD_DATE + "</h3>"
 				+ IPNAT.EXTENDED_NAME
 				+ "<h3>Author</h3>"
@@ -201,7 +196,7 @@ public class Help implements PlugIn {
 
 		// Panel to hold HTML pane
 		final JScrollPane scrollPane = new JScrollPane(htmlPane);
-		scrollPane.setPreferredSize(new Dimension(405, 200));
+		//scrollPane.setPreferredSize(new Dimension(405, 200));
 		frame.add(scrollPane, BorderLayout.CENTER);
 
 		// Panel to hold side buttons, all having fixed width

@@ -21,7 +21,6 @@
  */
 package ipnat.skel;
 
-import fiji.Debug;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -34,9 +33,9 @@ import ij.process.ImageProcessor;
  // See http://fractalfoundation.org/OFC/OFC-2-4.html
 public class LSystemsTree implements PlugIn {
 
-	/** Debugging method */
+	/** Debug method */
 	public static void main(final String[] args) {
-		Debug.run("Fractal Tree", "");
+		IJ.runPlugIn("ipnat.skel.LSystemsTree", "");
 	}
 
 	@Override
@@ -89,7 +88,6 @@ public class LSystemsTree implements PlugIn {
 		ip.drawLine(x1, y1, x2, y2);
 		drawTree(ip, x2, y2, angle - 20, recursions - 1);
 		drawTree(ip, x2, y2, angle + 20, recursions - 1);
-
 	}
 
 }

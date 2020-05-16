@@ -36,7 +36,7 @@ public class IPNAT {
 
 	public static final String EXTENDED_NAME = "Image Processing for NeuroAnatomy and Tree-like structures";
 	public static final String ABBREV_NAME = "hIPNAT";
-	public static final String DOC_URL = "http://imagej.net/Neuroanatomy";
+	public static final String DOC_URL = "https://imagej.net/Neuroanatomy";
 	public static final String SRC_URL = "https://github.com/tferr/hIPNAT";
 
 	/** The hIPNAT version **/
