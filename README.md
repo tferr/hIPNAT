@@ -7,15 +7,6 @@
 [![GPL License](http://img.shields.io/badge/license-GPL-blue.svg?style=flat-square)](http://opensource.org/licenses/GPL-3.0)
 
 hIPNAT (**h**IPNAT: **I**mage **P**rocessing for **N**euro**A**natomy and
-**T**ree-like structures) is a set of tools for the analysis of images of
-neurons and other tree-like morphologies. It is written for ImageJ, the _de facto_
-standard in scientific image processing. It is available through the ImageJ
-[Neuroanatomy update site](https://imagej.net/Neuroanatomy).
+**T**ree-like structures) was a prototyping project aimed at providing ImageJ-based tools for the analysis  of neurons and related structures. It was also the driving force behind the [re-write of Simple_Neurite_Tracer](https://github.com/morphonets/SNT), and the first project to be distributed through the [Neuroanatomy update site](https://imagej.net/Neuroanatomy).
 
-##License
-This program is free software: you can redistribute them and/or modify them
-under the terms of the
-[GNU General Public License](http://www.gnu.org/licenses/gpl.txt) as published
-by the Free Software
-Foundation, either version 3 of the License, or (at your option) any later
-version.
+The plugins and scripts deemed obsolete have been [archived](https://github.com/tferr/hIPNAT/releases/tag/1.0.12-SNAPSHOT). The modern counterparts can be found in Fiji's Script Editor (look under the _Templates>Neuroanatomy>_ menu) and are provided by [SNT](https://imagej.net/SNT:_Scripting). Plugins that parse skeletonized images that may still be relevant and were kept.
