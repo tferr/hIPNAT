@@ -103,8 +103,9 @@
 			<artifactId>Skeletonize3D_</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>ca.mcgill</groupId>
-			<artifactId>Sholl_Analysis</artifactId>
+			<groupId>org.morphonets</groupId>
+			<artifactId>SNT</artifactId>
+			<version>4.0.1</version>
 		</dependency>
 	</dependencies>
 </project>

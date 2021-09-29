@@ -51,7 +51,7 @@ import sc.fiji.analyzeSkeleton.AnalyzeSkeleton_;
 import sc.fiji.analyzeSkeleton.Point;
 import sc.fiji.analyzeSkeleton.SkeletonResult;
 import sc.fiji.skeletonize3D.Skeletonize3D_;
-import sholl.gui.EnhancedGenericDialog;
+import sc.fiji.snt.gui.EnhancedGenericDialog;
 
 /**
  * This class implements the ImageJ {@code Strahler Analysis} plugin. For more
